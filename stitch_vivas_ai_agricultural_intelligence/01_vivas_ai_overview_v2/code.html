@@ -1,0 +1,296 @@
+<!DOCTYPE html><html class="h-full" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Vivas AI - Intelligence for Living Agriculture</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-container": "#316e52",
+                      "on-secondary-fixed-variant": "#0e5138",
+                      "secondary-fixed-dim": "#95d4b3",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-fixed-variant": "#274e3d",
+                      "on-secondary-fixed": "#002114",
+                      "surface-container-high": "#e5e8ee",
+                      "on-surface-variant": "#414844",
+                      "surface-container": "#ebeef3",
+                      "on-primary-container": "#86af99",
+                      "surface": "#f7f9ff",
+                      "on-primary": "#ffffff",
+                      "surface-dim": "#d7dadf",
+                      "on-tertiary-container": "#cd9d6d",
+                      "outline": "#717973",
+                      "inverse-surface": "#2d3135",
+                      "tertiary-fixed": "#ffdcbd",
+                      "on-surface": "#181c20",
+                      "on-secondary": "#ffffff",
+                      "secondary-fixed": "#b1f0ce",
+                      "tertiary": "#3b1f00",
+                      "primary-container": "#1b4332",
+                      "inverse-on-surface": "#eef1f6",
+                      "primary-fixed-dim": "#a5d0b9",
+                      "background": "#f7f9ff",
+                      "surface-bright": "#f7f9ff",
+                      "surface-container-low": "#f1f4f9",
+                      "primary-fixed": "#c1ecd4",
+                      "primary": "#012d1d",
+                      "on-background": "#181c20",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-fixed-dim": "#f0bd8b",
+                      "surface-variant": "#e0e3e8",
+                      "surface-container-highest": "#e0e3e8",
+                      "on-error-container": "#93000a",
+                      "secondary": "#2c694e",
+                      "outline-variant": "#c1c8c2",
+                      "secondary-container": "#aeeecb",
+                      "surface-tint": "#3f6653",
+                      "inverse-primary": "#a5d0b9",
+                      "error": "#ba1a1a",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-fixed-variant": "#623f18",
+                      "on-primary-fixed": "#002114",
+                      "on-error": "#ffffff",
+                      "on-tertiary-fixed": "#2c1600",
+                      "tertiary-container": "#56340e"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "margin-desktop": "64px",
+                      "container-max": "1280px",
+                      "gutter": "24px",
+                      "margin-mobile": "20px",
+                      "unit": "8px"
+              },
+              "fontFamily": {
+                      "display-lg": [
+                              "Montserrat"
+                      ],
+                      "headline-lg": [
+                              "Montserrat"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "label-md": [
+                              "JetBrains Mono"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "headline-lg-mobile": [
+                              "Montserrat"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .blueprint-bg {
+            background-color: #f7f9ff;
+            background-image: 
+                linear-gradient(#e0e3e8 1px, transparent 1px),
+                linear-gradient(90deg, #e0e3e8 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        .glass-card {
+            background: rgba(247, 249, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid #c1c8c2;
+        }
+      </style>
+</head>
+<body class="bg-background text-on-surface h-full flex flex-col font-body-md blueprint-bg">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim flex justify-between items-center w-full px-margin-desktop py-4 sticky top-0 z-40" style="border-bottom: 1px solid #c1c8c2; box-shadow: none;">
+<div class="flex items-center gap-2"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0ACPnkoc9M35tS3cmz57NExkn0flBfFhY9zPWNefvroVeg6atPhNgt919ERxPb629tc8H_cq7U1xxuZrok5juh9h8LQ8e0q36d3yKXWhVnyqbuhy1r6tS0PObp7AKLDd1vin5OEIH_w4XrvVKS_Rqe01S6hTtoF13BCvlHj-eBfnGw86-HgtOaCbsJvQs29YYw4_zBmUCHqV_sApN1R1JVwUW9PmhmPytPJQIA01ftNnMWWn_bNLj6g0mj0CPEGwcRbA" alt="Vivas AI Logo" class="h-12 w-auto"></div>
+<nav class="hidden md:flex gap-8">
+<a class="text-secondary dark:text-secondary-fixed-dim font-bold font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors px-4 py-2 rounded-lg opacity-80 transition-opacity" href="#">Overview</a>
+<a class="text-on-surface-variant dark:text-on-secondary-fixed-variant font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors px-4 py-2 rounded-lg" href="#">Platform</a>
+<a class="text-on-surface-variant dark:text-on-secondary-fixed-variant font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors px-4 py-2 rounded-lg" href="#">Results</a>
+</nav>
+<div class="flex items-center">
+<span class="font-label-md text-label-md text-secondary dark:text-secondary-fixed-dim">Slide 01/05</span>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow flex flex-col md:flex-row max-w-container-max mx-auto w-full px-margin-desktop py-[80px] gap-12 overflow-y-auto pb-[100px]">
+<!-- Left Column: Hero & Quote -->
+<div class="flex-1 flex flex-col justify-center gap-8">
+<div>
+<p class="font-label-md text-label-md text-tertiary-container mb-2">// VIVAS_AI_ENGINE_v1</p>
+<h1 class="font-display-lg text-display-lg text-primary mb-6 leading-tight">Intelligence for<br>Living Agriculture</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-md">Transforming raw field data into actionable agronomic precision through advanced AI modeling.</p>
+</div>
+<div class="mt-8 border-l-2 border-tertiary-container pl-6 py-2">
+<p class="font-body-lg text-body-lg italic text-on-surface mb-4">"We are not just monitoring fields; we are simulating biological potential to maximize yield and resource efficiency."</p>
+<p class="font-label-md text-label-md text-on-surface-variant font-bold">- Dr. Gopikrishna Santhanam</p>
+</div>
+</div>
+<!-- Center Column: Visual Engine -->
+<div class="flex-1 flex flex-col items-center justify-center relative">
+<div class="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+<svg class="w-full h-full text-primary-container" viewBox="0 0 400 400">
+<circle cx="200" cy="200" fill="none" r="180" stroke="currentColor" stroke-dasharray="4 4" stroke-width="1"></circle>
+<circle cx="200" cy="200" fill="none" r="140" stroke="currentColor" stroke-width="1"></circle>
+<circle cx="200" cy="200" fill="none" r="100" stroke="currentColor" stroke-dasharray="2 6" stroke-width="1"></circle>
+</svg>
+</div>
+<div class="glass-card p-8 rounded-xl shadow-[0_8px_32px_rgba(27,67,50,0.05)] relative z-10 w-full max-w-md">
+<div class="flex justify-between items-center mb-8 border-b border-outline-variant pb-4">
+<span class="font-label-sm text-label-sm text-on-surface-variant">// DATA_INGESTION</span>
+<span class="flex h-2 w-2 rounded-full bg-secondary"></span>
+</div>
+<div class="space-y-6">
+<div class="flex items-center gap-4 group">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary-container group-hover:bg-primary-container group-hover:text-on-primary transition-colors border border-outline-variant">
+<span class="material-symbols-outlined">satellite_alt</span>
+</div>
+<div>
+<h3 class="font-label-md text-label-md font-bold text-on-surface">Satellite Telemetry</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Multispectral Imaging</p>
+</div>
+</div>
+<div class="flex items-center gap-4 group">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary-container group-hover:bg-primary-container group-hover:text-on-primary transition-colors border border-outline-variant">
+<span class="material-symbols-outlined">sensors</span>
+</div>
+<div>
+<h3 class="font-label-md text-label-md font-bold text-on-surface">Field IoT Sensors</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Soil Moisture &amp; NPK</p>
+</div>
+</div>
+<div class="flex items-center gap-4 group">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary-container group-hover:bg-primary-container group-hover:text-on-primary transition-colors border border-outline-variant">
+<span class="material-symbols-outlined">routine</span>
+</div>
+<div>
+<h3 class="font-label-md text-label-md font-bold text-on-surface">Weather Patterns</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Micro-climate Forecasting</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Intelligence Layers -->
+<div class="flex-1 flex flex-col justify-center gap-6">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-2">Intelligence Layers</h2>
+<div class="glass-card p-6 rounded-xl hover:bg-surface-container transition-colors cursor-pointer border-l-4 border-l-secondary">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Predictive</h3>
+<span class="material-symbols-outlined text-outline">analytics</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Anticipate stress, disease outbreaks, and yield trajectories before they manifest visually.</p>
+</div>
+<div class="glass-card p-6 rounded-xl hover:bg-surface-container transition-colors cursor-pointer border-l-4 border-l-tertiary-container">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Agronomic</h3>
+<span class="material-symbols-outlined text-outline">psychology</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Contextualize raw data with biological crop models specific to local seed varieties.</p>
+</div>
+<div class="glass-card p-6 rounded-xl hover:bg-surface-container transition-colors cursor-pointer border-l-4 border-l-primary-container">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Decision</h3>
+<span class="material-symbols-outlined text-outline">done_all</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Generate precise, verifiable action plans for irrigation, fertilization, and harvest timing.</p>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Visible on Mobile) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-center gap-gutter items-center py-4 bg-surface-container-low/80 backdrop-blur-md" style="border-top: 1px solid #c1c8c2; box-shadow: none;">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-fixed-variant px-6 py-2 hover:text-primary dark:hover:text-primary-fixed transition-all" href="#">
+<span class="material-symbols-outlined mb-1">arrow_back_ios</span>
+<span class="font-label-md text-label-md">Previous</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-xl px-6 py-2 scale-95 duration-150 hover:text-primary dark:hover:text-primary-fixed transition-all" href="#">
+<span class="material-symbols-outlined mb-1">grid_view</span>
+<span class="font-label-md text-label-md">Overview</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-fixed-variant px-6 py-2 hover:text-primary dark:hover:text-primary-fixed transition-all" href="#">
+<span class="material-symbols-outlined mb-1">arrow_forward_ios</span>
+<span class="font-label-md text-label-md">Next</span>
+</a>
+</nav>
+
+
+<footer class="w-full py-6 px-margin-desktop border-t border-outline-variant bg-surface text-center"><p class="font-label-md text-label-md text-on-surface-variant">(C) SAN R&amp;D Business Solutions</p></footer></body></html>

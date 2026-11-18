@@ -1,0 +1,2007 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2868
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 HelveticaNeue;\f1\fnil\fcharset0 .AppleSystemUIFontMonospaced-Regular;}
+{\colortbl;\red255\green255\blue255;\red11\green11\blue11;\red118\green116\blue110;\red65\green64\blue61;
+\red255\green255\blue255;\red11\green11\blue11;}
+{\*\expandedcolortbl;;\cssrgb\c4314\c4314\c4314;\cssrgb\c53725\c52941\c50588;\cssrgb\c32157\c31765\c30588;
+\cssrgb\c100000\c100000\c100000;\cssrgb\c4314\c4314\c4314\c10196;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs28 \cf2 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \cb3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb1 \strokec2 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb5 \strokec4 Vivas ai crop health schema\cf3 \strokec3  \'b7 SQL\cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \strokec2 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb6 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf3 \cb1 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- =====================================================================\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- Vivas AI \'b7 Crop Health module (Pest / Disease / Nutrient Deficiency)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- Target: PostgreSQL 14+   (adapt types/syntax if the app uses another DB/ORM)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 --\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- ASSUMED EXISTING TABLES (rename to match the real schema before running):\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 --   farms, sites, beds, crops, crop_varieties, plantings, inputs,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 --   tasks, users, contacts, notes, files\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- All new tables are prefixed ch_ to avoid collisions.\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- =====================================================================\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE EXTENSION IF NOT EXISTS pgcrypto;\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- ---------------------------------------------------------------------\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- 1. ENUMS\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- ---------------------------------------------------------------------\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TYPE ch_problem_type   AS ENUM ('PEST','DISEASE','DEFICIENCY');\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TYPE ch_scope          AS ENUM ('GLOBAL','FARM');   -- FARM = private to one farm until promoted\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TYPE ch_publish_status AS ENUM ('DRAFT','SUBMITTED','CHANGES_REQUESTED','VERIFIED','PUBLISHED','REJECTED','ARCHIVED');\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- Severity is stored as LOW/MODERATE/HIGH/SEVERE. For deficiencies the UI label for LOW is "Mild"\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- and HIGH is not offered (Mild / Moderate / Severe only).\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TYPE ch_severity       AS ENUM ('LOW','MODERATE','HIGH','SEVERE');\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TYPE ch_control_method AS ENUM ('CULTURAL','BIOLOGICAL','CHEMICAL','MECHANICAL','PHYSICAL','NUTRITIONAL');\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TYPE ch_resistance     AS ENUM ('RESISTANT','TOLERANT');\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TYPE ch_case_status    AS ENUM ('OPEN','AI_REVIEW','AGRONOMIST_REVIEW','DIAGNOSED','TREATING','MONITORING','RESOLVED','CLOSED');\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TYPE ch_case_source    AS ENUM ('MANUAL','AI_SCAN','IMPORT','ALERT');\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TYPE ch_outcome        AS ENUM ('RESOLVED','PARTIAL','FAILED','SELF_RESOLVED');\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TYPE ch_diag_source    AS ENUM ('AI','AGRONOMIST','FARMER');\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TYPE ch_treatment_status AS ENUM ('RECOMMENDED','PLANNED','APPLIED','SKIPPED','CANCELLED');\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TYPE ch_alert_level    AS ENUM ('INFO','WATCH','WARNING','CRITICAL');\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- generic updated_at trigger\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE OR REPLACE FUNCTION ch_touch_updated_at() RETURNS trigger AS $$\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 BEGIN NEW.updated_at = now(); RETURN NEW; END; $$ LANGUAGE plpgsql;\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- human-readable codes\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE SEQUENCE ch_seq_pest START 1;\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE SEQUENCE ch_seq_disease START 1;\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE SEQUENCE ch_seq_deficiency START 1;\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE SEQUENCE ch_seq_case START 1;\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- ---------------------------------------------------------------------\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- 2. LOOKUPS (editable dropdown values; global rows have farm_id NULL)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- list_code values: PEST_CATEGORY, PEST_TYPE, PLANT_PART, SPREAD_MECHANISM,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 --   MONITORING_METHOD, APPLICATION_METHOD, DISEASE_CATEGORY, DIAGNOSTIC_METHOD,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 --   LIFECYCLE_STAGE, IMAGE_LABEL, DOSE_UNIT, DOSE_BASIS\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- ---------------------------------------------------------------------\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_lookup (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   list_code   text NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   code        text NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   label       text NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   label_i18n  jsonb NOT NULL DEFAULT '\{\}',          -- \{"ta":"...","hi":"..."\}\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   sort_order  int  NOT NULL DEFAULT 0,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   is_active   boolean NOT NULL DEFAULT true,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   farm_id     uuid REFERENCES farms(id),            -- NULL = global\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   created_at  timestamptz NOT NULL DEFAULT now()\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE UNIQUE INDEX ux_ch_lookup ON ch_lookup (list_code, code, COALESCE(farm_id,'00000000-0000-0000-0000-000000000000'));\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE INDEX ix_ch_lookup_list ON ch_lookup (list_code, is_active, sort_order);\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_nutrient (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   code        text PRIMARY KEY,                     -- N,P,K,Ca,Mg,S,Fe,Zn,B,Mn,Cu,Mo,Cl,Ni\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   name        text NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   category    text NOT NULL CHECK (category IN ('MACRONUTRIENT','SECONDARY','MICRONUTRIENT')),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   sort_order  int NOT NULL DEFAULT 0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- Structured symptom vocabulary (used by forms AND the AI engine)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_symptom (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   code          text NOT NULL UNIQUE,               -- e.g. LEAF_YELLOWING_INTERVEINAL\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   label         text NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   plant_part_id uuid REFERENCES ch_lookup(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   description   text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   applies_to    ch_problem_type[] NOT NULL DEFAULT '\{PEST,DISEASE,DEFICIENCY\}',\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   is_active     boolean NOT NULL DEFAULT true\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- ---------------------------------------------------------------------\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- 3. LIBRARY (knowledge base) - one base table, discriminated by problem_type\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- ---------------------------------------------------------------------\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_problem (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   problem_type        ch_problem_type NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   code                text NOT NULL UNIQUE,                       -- PST-0001 / DIS-0001 / DEF-0001\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   name                text NOT NULL,                              -- Pest Name / Disease Name / Deficiency Name\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   local_names         jsonb NOT NULL DEFAULT '\{\}',\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   scientific_name     text,                                       -- Pest: scientific name; Disease: causal organism\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   category_id         uuid REFERENCES ch_lookup(id),              -- PEST_CATEGORY or DISEASE_CATEGORY (NULL for deficiency)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   pest_type_id        uuid REFERENCES ch_lookup(id),              -- PEST only (Chewing/Sucking/...)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   nutrient_code       text REFERENCES ch_nutrient(code),          -- DEFICIENCY only\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   identification_text text,                                       -- Identification Symptoms / Disease Identification / Deficiency Symptoms\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   favourable_text     text,                                       -- free-text favourable conditions\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   temp_min_c          numeric(4,1),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   temp_max_c          numeric(4,1),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   humidity_min_pct    numeric(4,1),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   humidity_max_pct    numeric(4,1),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   rainfall_note       text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   soil_note           text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   peak_occurrence_text text,                                      -- Pest: Peak Occurrence\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   peak_months         smallint[],                                 -- 1..12, drives seasonal alerts\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   development_stage_text text,                                    -- DISEASE only: Disease Development Stage\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   potential_severity  ch_severity,                                -- Severity Level (library-level)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   preventive_measures text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   is_soil_test_required boolean,                                  -- DEFICIENCY convenience flag\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   notes               text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   scope               ch_scope NOT NULL DEFAULT 'FARM',\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   farm_id             uuid REFERENCES farms(id),                  -- required when scope = FARM\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   status              ch_publish_status NOT NULL DEFAULT 'DRAFT',\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   version             int NOT NULL DEFAULT 1,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   created_by          uuid NOT NULL REFERENCES users(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   verified_by         uuid REFERENCES users(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   verified_at         timestamptz,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   published_at        timestamptz,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   created_at          timestamptz NOT NULL DEFAULT now(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   updated_at          timestamptz NOT NULL DEFAULT now(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   deleted_at          timestamptz,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   CHECK ( (scope = 'FARM') = (farm_id IS NOT NULL) ),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   CHECK ( (problem_type = 'DEFICIENCY') = (nutrient_code IS NOT NULL) ),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   CHECK ( problem_type = 'PEST'    OR pest_type_id IS NULL ),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   CHECK ( problem_type = 'DISEASE' OR development_stage_text IS NULL ),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   CHECK ( problem_type <> 'DEFICIENCY' OR category_id IS NULL )\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE INDEX ix_ch_problem_type_status ON ch_problem (problem_type, status) WHERE deleted_at IS NULL;\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE INDEX ix_ch_problem_farm        ON ch_problem (farm_id) WHERE farm_id IS NOT NULL;\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE INDEX ix_ch_problem_name_fts   ON ch_problem USING gin (to_tsvector('simple', name || ' ' || COALESCE(scientific_name,'')));\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TRIGGER trg_ch_problem_upd BEFORE UPDATE ON ch_problem FOR EACH ROW EXECUTE FUNCTION ch_touch_updated_at();\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- Multi-select attributes: Affected Plant Part, Spread Mechanism / Mode of Spread,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- Monitoring Method, Diagnostic Method (the lookup row's list_code tells which)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_problem_attr (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   problem_id uuid NOT NULL REFERENCES ch_problem(id) ON DELETE CASCADE,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   lookup_id  uuid NOT NULL REFERENCES ch_lookup(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   PRIMARY KEY (problem_id, lookup_id)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- Problem <-> Crop (many-to-many) : replaces the single "Affected Crop" field\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_problem_crop (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   problem_id        uuid NOT NULL REFERENCES ch_problem(id) ON DELETE CASCADE,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   crop_id           uuid NOT NULL REFERENCES crops(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   is_primary        boolean NOT NULL DEFAULT false,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   susceptible_stage text,                                          -- e.g. 'Flowering to fruiting'\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   peak_months       smallint[],                                    -- crop-specific override\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   crop_severity     ch_severity,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   notes             text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   PRIMARY KEY (problem_id, crop_id)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE INDEX ix_ch_problem_crop_crop ON ch_problem_crop (crop_id);\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- Resistant / Tolerant varieties (links to real varieties)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_resistant_variety (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   problem_id  uuid NOT NULL REFERENCES ch_problem(id) ON DELETE CASCADE,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   crop_id     uuid NOT NULL REFERENCES crops(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   variety_id  uuid NOT NULL REFERENCES crop_varieties(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   resistance  ch_resistance NOT NULL DEFAULT 'TOLERANT',\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   notes       text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   UNIQUE (problem_id, variety_id)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- Pest life cycle (child rows instead of one text box)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_lifecycle_stage (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   problem_id        uuid NOT NULL REFERENCES ch_problem(id) ON DELETE CASCADE,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   stage_id          uuid NOT NULL REFERENCES ch_lookup(id),        -- LIFECYCLE_STAGE: Egg/Larva/Nymph/Adult (+Pupa)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   seq               int  NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   duration_days_min int,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   duration_days_max int,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   description       text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   UNIQUE (problem_id, seq)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- Structured symptoms for a problem (AI matching weights)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_problem_symptom (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   problem_id uuid NOT NULL REFERENCES ch_problem(id) ON DELETE CASCADE,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   symptom_id uuid NOT NULL REFERENCES ch_symptom(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   weight     numeric(3,2) NOT NULL DEFAULT 1.00 CHECK (weight BETWEEN 0 AND 1),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   PRIMARY KEY (problem_id, symptom_id)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- Control / corrective measures. Covers: Control Measures, Application Method,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- Fertilizer Source, Recommended Dose, Corrective Measures\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_control_measure (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   problem_id          uuid NOT NULL REFERENCES ch_problem(id) ON DELETE CASCADE,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   crop_id             uuid REFERENCES crops(id),                   -- NULL = applies to all mapped crops\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   method_type         ch_control_method NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   title               text NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   description         text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   input_id            uuid REFERENCES inputs(id),                  -- product / fertilizer from Inputs master\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   input_name_text     text,                                        -- fallback when no Input record exists\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   active_ingredient   text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   dose_value          numeric(10,3),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   dose_unit_id        uuid REFERENCES ch_lookup(id),               -- ml, g, kg, L ...\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   dose_basis_id       uuid REFERENCES ch_lookup(id),               -- per litre water / per acre / per ha / per plant\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   application_method_id uuid REFERENCES ch_lookup(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   frequency_text      text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   interval_days       int,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   max_applications    int,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   phi_days            int,                                         -- pre-harvest interval\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   reentry_hours       int,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   safety_notes        text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   seq                 int NOT NULL DEFAULT 0,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   is_active           boolean NOT NULL DEFAULT true,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   CHECK ( method_type <> 'CHEMICAL' OR phi_days IS NOT NULL )      -- PHI mandatory for chemicals\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE INDEX ix_ch_control_problem ON ch_control_measure (problem_id, crop_id);\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- Images (library, case, diagnosis, follow-up). Reuse platform file storage via file_id.\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_media (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   owner_type    text NOT NULL CHECK (owner_type IN ('PROBLEM','CASE','DIAGNOSIS','FOLLOWUP')),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   owner_id      uuid NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   file_id       uuid REFERENCES files(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   url           text NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   thumb_url     text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   image_label_id uuid REFERENCES ch_lookup(id),                    -- IMAGE_LABEL: Egg, Larva, Adult, Leaf symptom, Fruit symptom, Whole plant...\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   caption       text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   is_primary    boolean NOT NULL DEFAULT false,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   source_credit text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   width         int,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   height        int,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   checksum      text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   uploaded_by   uuid REFERENCES users(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   created_at    timestamptz NOT NULL DEFAULT now()\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE INDEX ix_ch_media_owner ON ch_media (owner_type, owner_id);\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- Approval workflow log + version snapshots\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_problem_review (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   problem_id  uuid NOT NULL REFERENCES ch_problem(id) ON DELETE CASCADE,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   action      text NOT NULL CHECK (action IN ('SUBMIT','REQUEST_CHANGES','VERIFY','PUBLISH','REJECT','ARCHIVE','REOPEN')),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   reviewer_id uuid NOT NULL REFERENCES users(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   comment     text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   created_at  timestamptz NOT NULL DEFAULT now()\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_problem_version (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   problem_id  uuid NOT NULL REFERENCES ch_problem(id) ON DELETE CASCADE,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   version     int  NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   snapshot    jsonb NOT NULL,                                      -- full record incl. children\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   changed_by  uuid REFERENCES users(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   changed_at  timestamptz NOT NULL DEFAULT now(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   PRIMARY KEY (problem_id, version)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- ---------------------------------------------------------------------\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- 4. CASES (farm-level infection / outbreak records)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- ---------------------------------------------------------------------\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_case (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   case_no               text NOT NULL UNIQUE,                      -- CH-2026-000123\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   farm_id               uuid NOT NULL REFERENCES farms(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   planting_id           uuid REFERENCES plantings(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   site_id               uuid REFERENCES sites(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   bed_id                uuid REFERENCES beds(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   crop_id               uuid NOT NULL REFERENCES crops(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   variety_id            uuid REFERENCES crop_varieties(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   crop_stage            text,                                      -- Nursery / Vegetative / Flowering / Fruiting / Harvest (from planting)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   observed_at           timestamptz NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   reported_by           uuid NOT NULL REFERENCES users(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   assigned_to           uuid REFERENCES users(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   assigned_contact_id   uuid REFERENCES contacts(id),              -- external consultant\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   suspected_type        ch_problem_type,                           -- NULL = Unknown\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   suspected_problem_id  uuid REFERENCES ch_problem(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   confirmed_problem_id  uuid REFERENCES ch_problem(id),            -- ground-truth label for AI\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   severity              ch_severity NOT NULL DEFAULT 'LOW',\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   incidence_pct         numeric(5,2) CHECK (incidence_pct BETWEEN 0 AND 100),  -- % plants affected\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   area_affected         numeric(10,2),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   area_unit             text,                                      -- bed-ft / sq ft / acre / ha\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   symptoms_notes        text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   latitude              numeric(9,6),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   longitude             numeric(9,6),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   weather_snapshot      jsonb,                                     -- \{temp_c, humidity_pct, rain_7d_mm, source, captured_at\}\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   status                ch_case_status NOT NULL DEFAULT 'OPEN',\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   source                ch_case_source NOT NULL DEFAULT 'MANUAL',\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   outcome               ch_outcome,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   resolved_at           timestamptz,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   estimated_loss_amount numeric(12,2),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   follow_up_date        date,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   created_at            timestamptz NOT NULL DEFAULT now(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   updated_at            timestamptz NOT NULL DEFAULT now(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   deleted_at            timestamptz\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE INDEX ix_ch_case_farm_status ON ch_case (farm_id, status) WHERE deleted_at IS NULL;\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE INDEX ix_ch_case_planting    ON ch_case (planting_id);\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE INDEX ix_ch_case_crop        ON ch_case (crop_id, confirmed_problem_id);\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE INDEX ix_ch_case_geo         ON ch_case (latitude, longitude);\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TRIGGER trg_ch_case_upd BEFORE UPDATE ON ch_case FOR EACH ROW EXECUTE FUNCTION ch_touch_updated_at();\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_case_plant_part (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   case_id       uuid NOT NULL REFERENCES ch_case(id) ON DELETE CASCADE,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   plant_part_id uuid NOT NULL REFERENCES ch_lookup(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   PRIMARY KEY (case_id, plant_part_id)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_case_symptom (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   case_id    uuid NOT NULL REFERENCES ch_case(id) ON DELETE CASCADE,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   symptom_id uuid NOT NULL REFERENCES ch_symptom(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   note       text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   PRIMARY KEY (case_id, symptom_id)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- Every diagnosis attempt (AI ranked candidates + human decisions)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_case_diagnosis (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   case_id          uuid NOT NULL REFERENCES ch_case(id) ON DELETE CASCADE,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   source           ch_diag_source NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   problem_id       uuid REFERENCES ch_problem(id),                 -- NULL when AI is not in library\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   problem_type     ch_problem_type,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   suggested_name   text,                                           -- used when problem_id is NULL\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   rank             int,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   confidence       numeric(5,4) CHECK (confidence BETWEEN 0 AND 1),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   model_name       text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   model_version    text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   ai_request_id    uuid,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   rationale        text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   is_confirmed     boolean NOT NULL DEFAULT false,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   confirmed_by     uuid REFERENCES users(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   confirmed_at     timestamptz,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   correction_reason text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   raw_response     jsonb,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   created_at       timestamptz NOT NULL DEFAULT now()\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE INDEX ix_ch_diag_case ON ch_case_diagnosis (case_id, rank);\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE UNIQUE INDEX ux_ch_diag_one_confirmed ON ch_case_diagnosis (case_id) WHERE is_confirmed;\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- Treatments (link recommendation -> Task -> outcome)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_case_treatment (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   case_id            uuid NOT NULL REFERENCES ch_case(id) ON DELETE CASCADE,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   control_measure_id uuid REFERENCES ch_control_measure(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   task_id            uuid REFERENCES tasks(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   input_id           uuid REFERENCES inputs(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   recommended_by     ch_diag_source NOT NULL DEFAULT 'AI',\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   title              text NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   planned_date       date,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   applied_date       date,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   dose_value         numeric(10,3),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   dose_unit_id       uuid REFERENCES ch_lookup(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   dose_basis_id      uuid REFERENCES ch_lookup(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   application_method_id uuid REFERENCES ch_lookup(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   phi_days           int,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   safe_harvest_date  date GENERATED ALWAYS AS (applied_date + phi_days) STORED,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   cost               numeric(12,2),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   status             ch_treatment_status NOT NULL DEFAULT 'RECOMMENDED',\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   outcome_notes      text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   created_at         timestamptz NOT NULL DEFAULT now()\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE INDEX ix_ch_treat_case ON ch_case_treatment (case_id);\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE INDEX ix_ch_treat_safe_harvest ON ch_case_treatment (safe_harvest_date);\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- Follow-up observations (progress tracking)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_case_followup (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   case_id       uuid NOT NULL REFERENCES ch_case(id) ON DELETE CASCADE,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   observed_at   timestamptz NOT NULL DEFAULT now(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   observed_by   uuid NOT NULL REFERENCES users(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   severity      ch_severity,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   incidence_pct numeric(5,2) CHECK (incidence_pct BETWEEN 0 AND 100),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   trend         text CHECK (trend IN ('IMPROVING','STABLE','WORSENING')),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   notes         text\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_case_note (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   case_id uuid NOT NULL REFERENCES ch_case(id) ON DELETE CASCADE,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   note_id uuid NOT NULL REFERENCES notes(id) ON DELETE CASCADE,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   PRIMARY KEY (case_id, note_id)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- ---------------------------------------------------------------------\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- 5. AI ENGINE\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- ---------------------------------------------------------------------\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_ai_request (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   farm_id       uuid NOT NULL REFERENCES farms(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   case_id       uuid REFERENCES ch_case(id) ON DELETE SET NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   user_id       uuid NOT NULL REFERENCES users(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   request_type  text NOT NULL CHECK (request_type IN ('DIAGNOSE','REMEDY','RISK','CHAT')),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   payload       jsonb NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   response      jsonb,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   status        text NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING','SUCCESS','FAILED','TIMEOUT')),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   model_name    text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   model_version text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   latency_ms    int,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   error_message text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   created_at    timestamptz NOT NULL DEFAULT now()\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE INDEX ix_ch_ai_req_case ON ch_ai_request (case_id);\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_ai_feedback (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   diagnosis_id       uuid NOT NULL REFERENCES ch_case_diagnosis(id) ON DELETE CASCADE,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   user_id            uuid NOT NULL REFERENCES users(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   was_correct        boolean NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   correct_problem_id uuid REFERENCES ch_problem(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   rating             smallint CHECK (rating BETWEEN 1 AND 5),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   comment            text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   created_at         timestamptz NOT NULL DEFAULT now()\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- Training/evaluation export: agronomist-confirmed cases with images\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE VIEW v_ch_training_set AS\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 SELECT c.id AS case_id, c.crop_id, c.variety_id, c.crop_stage, c.confirmed_problem_id,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2        p.problem_type, p.name AS problem_name,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2        (SELECT count(*) FROM ch_media m WHERE m.owner_type='CASE' AND m.owner_id=c.id) AS image_count,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2        c.weather_snapshot, c.observed_at\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 FROM ch_case c\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 JOIN ch_problem p ON p.id = c.confirmed_problem_id\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 WHERE c.deleted_at IS NULL\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   AND EXISTS (SELECT 1 FROM ch_case_diagnosis d\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2               WHERE d.case_id = c.id AND d.is_confirmed AND d.source = 'AGRONOMIST');\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- ---------------------------------------------------------------------\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- 6. WEATHER-BASED RISK ALERTS (Phase 4; create tables now, populate later)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- ---------------------------------------------------------------------\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_risk_rule (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   problem_id    uuid NOT NULL REFERENCES ch_problem(id) ON DELETE CASCADE,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   crop_id       uuid REFERENCES crops(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   conditions    jsonb NOT NULL,     -- \{"temp_c":\{"min":20,"max":28\},"humidity_pct":\{"min":80\},"rain_days_in_window":\{"min":3\}\}\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   lookback_days int NOT NULL DEFAULT 7,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   level         ch_alert_level NOT NULL DEFAULT 'WATCH',\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   is_active     boolean NOT NULL DEFAULT true\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_alert (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   farm_id         uuid NOT NULL REFERENCES farms(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   planting_id     uuid REFERENCES plantings(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   problem_id      uuid REFERENCES ch_problem(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   rule_id         uuid REFERENCES ch_risk_rule(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   level           ch_alert_level NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   message         text NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   status          text NOT NULL DEFAULT 'NEW' CHECK (status IN ('NEW','ACKNOWLEDGED','DISMISSED','CONVERTED_TO_CASE')),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   acknowledged_by uuid REFERENCES users(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   created_at      timestamptz NOT NULL DEFAULT now()\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE INDEX ix_ch_alert_farm ON ch_alert (farm_id, status, created_at DESC);\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- ---------------------------------------------------------------------\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- 7. BULK IMPORT (reuse Import Hub tables if they already exist)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- ---------------------------------------------------------------------\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_import_batch (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   farm_id       uuid REFERENCES farms(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   user_id       uuid NOT NULL REFERENCES users(id),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   entity_type   text NOT NULL CHECK (entity_type IN ('PEST','DISEASE','DEFICIENCY')),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   file_name     text NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   status        text NOT NULL DEFAULT 'UPLOADED' CHECK (status IN ('UPLOADED','VALIDATING','VALIDATED','IMPORTING','COMPLETED','FAILED')),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   total_rows    int NOT NULL DEFAULT 0,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   success_rows  int NOT NULL DEFAULT 0,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   failed_rows   int NOT NULL DEFAULT 0,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   import_mode   text NOT NULL DEFAULT 'CREATE_ONLY' CHECK (import_mode IN ('CREATE_ONLY','UPSERT_BY_CODE')),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   created_at    timestamptz NOT NULL DEFAULT now(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   completed_at  timestamptz\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 CREATE TABLE ch_import_error (\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   id        uuid PRIMARY KEY DEFAULT gen_random_uuid(),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   batch_id  uuid NOT NULL REFERENCES ch_import_batch(id) ON DELETE CASCADE,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   sheet     text NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   row_no    int  NOT NULL,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   column_name text,\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2   message   text NOT NULL\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 );\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- ---------------------------------------------------------------------\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- 8. SEED DATA (values taken from the "Data Entry Fields" document)\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 -- ---------------------------------------------------------------------\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 INSERT INTO ch_nutrient (code,name,category,sort_order) VALUES\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2  ('N','Nitrogen','MACRONUTRIENT',1),('P','Phosphorus','MACRONUTRIENT',2),('K','Potassium','MACRONUTRIENT',3),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2  ('Ca','Calcium','SECONDARY',4),('Mg','Magnesium','SECONDARY',5),('S','Sulphur','SECONDARY',6),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2  ('Fe','Iron','MICRONUTRIENT',7),('Zn','Zinc','MICRONUTRIENT',8),('B','Boron','MICRONUTRIENT',9),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2  ('Mn','Manganese','MICRONUTRIENT',10),('Cu','Copper','MICRONUTRIENT',11),('Mo','Molybdenum','MICRONUTRIENT',12),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2  ('Cl','Chlorine','MICRONUTRIENT',13),('Ni','Nickel','MICRONUTRIENT',14);\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 INSERT INTO ch_lookup (list_code, code, label, sort_order) VALUES\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2  ('PEST_CATEGORY','INSECT','Insect',1),('PEST_CATEGORY','MITE','Mite',2),('PEST_CATEGORY','NEMATODE','Nematode',3),('PEST_CATEGORY','OTHER','Other',4),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2  ('PEST_TYPE','CHEWING','Chewing',1),('PEST_TYPE','SUCKING','Sucking',2),('PEST_TYPE','BORING','Boring',3),('PEST_TYPE','MINING','Mining',4),('PEST_TYPE','ROOT_FEEDING','Root-feeding',5),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2  ('DISEASE_CATEGORY','FUNGAL','Fungal',1),('DISEASE_CATEGORY','BACTERIAL','Bacterial',2),('DISEASE_CATEGORY','VIRAL','Viral',3),('DISEASE_CATEGORY','NEMATODE','Nematode',4),('DISEASE_CATEGORY','PHYTOPLASMA','Phytoplasma',5),('DISEASE_CATEGORY','ABIOTIC','Abiotic',6),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2  ('PLANT_PART','ROOT','Root',1),('PLANT_PART','STEM','Stem',2),('PLANT_PART','LEAF','Leaf',3),('PLANT_PART','FLOWER','Flower',4),('PLANT_PART','FRUIT','Fruit',5),('PLANT_PART','SEED','Seed',6),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2  ('SPREAD_MECHANISM','WIND','Wind',1),('SPREAD_MECHANISM','SOIL','Soil',2),('SPREAD_MECHANISM','WATER','Water',3),('SPREAD_MECHANISM','SEED','Seed',4),('SPREAD_MECHANISM','PLANTING_MATERIAL','Planting material',5),('SPREAD_MECHANISM','INSECT_VECTOR','Insect vector',6),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2  ('MONITORING_METHOD','TRAP','Trap',1),('MONITORING_METHOD','VISUAL','Visual inspection',2),('MONITORING_METHOD','SAMPLING','Sampling',3),('MONITORING_METHOD','SCOUTING','Scouting',4),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2  ('APPLICATION_METHOD','SPRAY','Spray',1),('APPLICATION_METHOD','SOIL','Soil application',2),('APPLICATION_METHOD','SEED_TREATMENT','Seed treatment',3),('APPLICATION_METHOD','FOLIAR','Foliar',4),('APPLICATION_METHOD','FERTIGATION','Fertigation',5),('APPLICATION_METHOD','OTHER','Other',9),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2  ('DIAGNOSTIC_METHOD','VISUAL','Visual',1),('DIAGNOSTIC_METHOD','SOIL_TEST','Soil test',2),('DIAGNOSTIC_METHOD','TISSUE_TEST','Tissue test',3),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2  ('LIFECYCLE_STAGE','EGG','Egg',1),('LIFECYCLE_STAGE','LARVA','Larva',2),('LIFECYCLE_STAGE','NYMPH','Nymph',3),('LIFECYCLE_STAGE','ADULT','Adult',4),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2  ('IMAGE_LABEL','WHOLE_PLANT','Whole plant',1),('IMAGE_LABEL','LEAF','Leaf symptom',2),('IMAGE_LABEL','STEM','Stem symptom',3),('IMAGE_LABEL','FRUIT','Fruit symptom',4),('IMAGE_LABEL','ROOT','Root symptom',5),('IMAGE_LABEL','PEST_EGG','Pest - egg',6),('IMAGE_LABEL','PEST_LARVA','Pest - larva/nymph',7),('IMAGE_LABEL','PEST_ADULT','Pest - adult',8),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2  ('DOSE_UNIT','ML','ml',1),('DOSE_UNIT','L','L',2),('DOSE_UNIT','G','g',3),('DOSE_UNIT','KG','kg',4),\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2  ('DOSE_BASIS','PER_LITRE','per litre of water',1),('DOSE_BASIS','PER_ACRE','per acre',2),('DOSE_BASIS','PER_HA','per hectare',3),('DOSE_BASIS','PER_PLANT','per plant',4),('DOSE_BASIS','PER_BED','per bed',5);\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \strokec3 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb5 \strokec2 \'a0\cb1 \
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs28 \cf2 \
+\
+\pard\pardeftab720\partightenfactor0
+
+\fs32 \cf2 \
+\
+\pard\pardeftab720\partightenfactor0
+
+\fs24 \cf2 \
+\pard\pardeftab720\partightenfactor0
+
+\fs32 \cf2 \
+\
+}

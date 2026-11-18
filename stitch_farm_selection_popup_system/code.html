@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Choose Farm | VivasAI</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script data-purpose="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            vivas: {
+              dark: '#0e3a22',
+              forest: '#114427',
+              emerald: '#15803d',
+              leaf: '#22c55e',
+              sage: '#eaf3ec',
+              gold: '#eab308'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+<!-- BEGIN: Custom Styles -->
+<style data-purpose="custom-background">
+    body {
+      background-color: #f7faf7;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(34, 197, 94, 0.05) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(234, 179, 8, 0.06) 0px, transparent 55%),
+        radial-gradient(at 50% 20%, rgba(17, 68, 39, 0.03) 0px, transparent 60%);
+      min-height: 100vh;
+    }
+  </style>
+<style data-purpose="card-interactions">
+    .farm-card {
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .farm-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(17, 68, 39, 0.08), 0 8px 10px -6px rgba(17, 68, 39, 0.04);
+      border-color: #22c55e;
+    }
+    .farm-card:hover .chevron-arrow {
+      transform: translateX(3px);
+      color: #15803d;
+    }
+  </style>
+<!-- END: Custom Styles -->
+</head>
+<body class="text-slate-800 antialiased font-sans flex flex-col justify-between min-h-screen">
+<!-- BEGIN: MainHeader -->
+<header class="w-full bg-white/80 backdrop-blur-md border-b border-emerald-900/10 sticky top-0 z-30" data-purpose="app-navigation-header">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+<!-- VivasAI Brand Logo -->
+<div class="flex items-center space-x-3">
+<a class="focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-lg p-1" href="#" title="VivasAI Dashboard">
+<img alt="VivasAI Logo" class="h-9 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwPtsg2VzjyoOTL2WpclEHFV2rWiN_GGcugDtXy4g1EMkdf0Pjz00fFnJ1-nwJ0y2hI-7EVvzYI9vWUGXF1OQaj8MtyeWaNCGWaovXQMIjAqNwV6DYRvTURFDJJGmZxYLpscBLm_x0ctqsYZE2Yl_xJFmeaS9TeK0v5mayw7DLhVcLJqB2oOY4tn7vjPRZ8_ynZiGZEiT7jFNc8jMC0V37kVp8Link2NNTNU4wwtOUfS6eYzxDmDzJ0NHFF2LfDDTL"/>
+</a>
+</div>
+<!-- User Logout Action -->
+<div class="flex items-center space-x-4">
+<button class="group inline-flex items-center gap-2 text-sm font-medium text-rose-600 hover:text-rose-700 transition-colors py-1.5 px-3 rounded-lg hover:bg-rose-50/80 focus:outline-none focus:ring-2 focus:ring-rose-500" data-purpose="logout-button" type="button">
+<span>Log out</span>
+<!-- Exit Icon -->
+<svg class="w-4 h-4 stroke-current stroke-2 fill-none transition-transform group-hover:translate-x-0.5" stroke-linecap="round" stroke-linejoin="round" viewbox="0 0 24 24">
+<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+<polyline points="16 17 21 12 16 7"></polyline>
+<line x1="21" x2="9" y1="12" y2="12"></line>
+</svg>
+</button>
+</div>
+</div>
+</header>
+<!-- END: MainHeader -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 flex items-center justify-center py-10 px-4 sm:px-6" data-purpose="farm-selection-container">
+<section aria-labelledby="welcome-heading" class="w-full max-w-[620px] bg-white rounded-3xl border border-slate-200/80 shadow-xl shadow-emerald-950/5 p-6 sm:p-9">
+<!-- Modal Header Section -->
+<div class="mb-6">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-100/80 text-emerald-800 text-xs font-medium mb-3">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          Connected Organization
+        </div>
+<h1 class="text-2xl sm:text-3xl font-extrabold text-vivas-dark tracking-tight leading-tight" id="welcome-heading">
+          Welcome back, Gopikrishna Santhanam
+        </h1>
+<p class="mt-2 text-base text-slate-600">
+          Please choose your farm to continue
+        </p>
+</div>
+<!-- Search & Filter Bar -->
+<div class="mb-5 relative" data-purpose="search-box">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+<svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<input class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 placeholder-slate-400 transition" id="farmSearchInput" placeholder="Search farms by name, location..." type="text"/>
+</div>
+<!-- Farms Card List Container -->
+<div class="space-y-3.5" data-purpose="farm-list" role="list">
+<!-- Farm Card 1 -->
+<article class="farm-card cursor-pointer border border-slate-200/90 hover:border-emerald-500 bg-white rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-4 select-none" role="listitem">
+<div class="flex items-center gap-4 min-w-0">
+<!-- Monogram Avatar Badge -->
+<div class="w-12 h-12 rounded-xl bg-rose-100 flex-shrink-0 flex items-center justify-center text-rose-700 font-bold text-base shadow-inner">
+              GF
+            </div>
+<!-- Details Column -->
+<div class="min-w-0">
+<div class="flex items-center gap-2 flex-wrap mb-1">
+<h2 class="text-base font-bold text-slate-900 truncate">Gopikrishna's Farm</h2>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-700">
+                  Owner
+                </span>
+</div>
+<!-- Metadata Row -->
+<div class="flex items-center flex-wrap text-xs text-slate-500 gap-y-1 gap-x-3.5">
+<!-- Weather Metric -->
+<span class="inline-flex items-center gap-1">
+<!-- Cloud Icon -->
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
+</svg>
+                  14.3° C
+                </span>
+<!-- Location -->
+<span class="inline-flex items-center gap-1">
+<!-- Pin Icon -->
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+<circle cx="12" cy="10" r="3"></circle>
+</svg>
+                  India
+                </span>
+<!-- Opened Ago -->
+<span class="text-slate-400 hidden sm:inline">•</span>
+<span class="text-slate-500">Opened 14h ago</span>
+</div>
+</div>
+</div>
+<!-- Trailing Navigation Icon -->
+<div class="flex-shrink-0 text-slate-400 chevron-arrow transition-transform duration-150">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<polyline points="9 18 15 12 9 6"></polyline>
+</svg>
+</div>
+</article>
+<!-- Farm Card 2 -->
+<article class="farm-card cursor-pointer border border-slate-200/90 hover:border-emerald-500 bg-white rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-4 select-none" role="listitem">
+<div class="flex items-center gap-4 min-w-0">
+<!-- Monogram Avatar Badge -->
+<div class="w-12 h-12 rounded-xl bg-rose-100 flex-shrink-0 flex items-center justify-center text-rose-700 font-bold text-base shadow-inner">
+              GF
+            </div>
+<!-- Details Column -->
+<div class="min-w-0">
+<div class="flex items-center gap-2 flex-wrap mb-1">
+<h2 class="text-base font-bold text-slate-900 truncate">gks Farm</h2>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-700">
+                  Owner
+                </span>
+</div>
+<!-- Metadata Row -->
+<div class="flex items-center flex-wrap text-xs text-slate-500 gap-y-1 gap-x-3.5">
+<span class="inline-flex items-center gap-1">
+<!-- Cloud Icon -->
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
+</svg>
+                  14.3° C
+                </span>
+<span class="inline-flex items-center gap-1">
+<!-- Pin Icon -->
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+<circle cx="12" cy="10" r="3"></circle>
+</svg>
+                  India
+                </span>
+<span class="text-slate-400 hidden sm:inline">•</span>
+<span class="text-slate-500">Opened 22h ago</span>
+</div>
+</div>
+</div>
+<!-- Trailing Navigation Icon -->
+<div class="flex-shrink-0 text-slate-400 chevron-arrow transition-transform duration-150">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<polyline points="9 18 15 12 9 6"></polyline>
+</svg>
+</div>
+</article>
+<!-- Farm Card 3 -->
+<article class="farm-card cursor-pointer border border-slate-200/90 hover:border-emerald-500 bg-white rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-4 select-none" role="listitem">
+<div class="flex items-center gap-4 min-w-0">
+<!-- Monogram Avatar Badge -->
+<div class="w-12 h-12 rounded-xl bg-rose-100 flex-shrink-0 flex items-center justify-center text-rose-700 font-bold text-base shadow-inner">
+              FF
+            </div>
+<!-- Details Column -->
+<div class="min-w-0">
+<div class="flex items-center gap-2 flex-wrap mb-1">
+<h2 class="text-base font-bold text-slate-900 truncate">farm fresh</h2>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-700">
+                  Owner
+                </span>
+</div>
+<!-- Metadata Row -->
+<div class="flex items-center flex-wrap text-xs text-slate-500 gap-y-1 gap-x-3.5">
+<span class="inline-flex items-center gap-1">
+<!-- Moon Icon -->
+<svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+</svg>
+                  55.2° F
+                </span>
+<span class="inline-flex items-center gap-1">
+<!-- Pin Icon -->
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+<circle cx="12" cy="10" r="3"></circle>
+</svg>
+                  New York, N...
+                </span>
+<span class="text-slate-400 hidden sm:inline">•</span>
+<span class="text-slate-500">Opened 1w ago</span>
+</div>
+</div>
+</div>
+<!-- Trailing Navigation Icon -->
+<div class="flex-shrink-0 text-slate-400 chevron-arrow transition-transform duration-150">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<polyline points="9 18 15 12 9 6"></polyline>
+</svg>
+</div>
+</article>
+</div>
+<!-- Add New Farm Action Button -->
+<div class="mt-5">
+<button class="w-full py-3.5 px-4 border-2 border-dashed border-slate-300 hover:border-emerald-600 rounded-2xl flex items-center justify-center gap-2 text-slate-600 hover:text-emerald-700 bg-slate-50/50 hover:bg-emerald-50/40 transition-colors font-semibold text-sm group focus:outline-none focus:ring-2 focus:ring-emerald-500" data-purpose="create-farm-button" type="button">
+<svg class="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-colors" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Create or Connect New Farm</span>
+</button>
+</div>
+</section>
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: MainFooter -->
+<footer class="w-full py-4 text-center border-t border-slate-200/50 bg-white/40 text-xs text-slate-500" data-purpose="app-footer">
+<div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6">
+<span class="font-medium text-slate-600">VivasAI • Intelligence for Living Agriculture</span>
+<span class="hidden sm:inline text-slate-300">|</span>
+<div class="flex gap-4">
+<a class="hover:text-emerald-700 transition" href="#">Help &amp; Documentation</a>
+<a class="hover:text-emerald-700 transition" href="#">Privacy Policy</a>
+</div>
+</div>
+</footer>
+<!-- END: MainFooter -->
+<!-- BEGIN: JavaScript Logic -->
+<script data-purpose="search-interaction">
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('farmSearchInput');
+      const farmCards = document.querySelectorAll('[data-purpose="farm-list"] article');
+
+      searchInput.addEventListener('input', (event) => {
+        const query = event.target.value.toLowerCase().trim();
+        farmCards.forEach(card => {
+          const text = card.textContent.toLowerCase();
+          if (text.includes(query)) {
+            card.style.display = 'flex';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+  </script>
+<!-- END: JavaScript Logic -->
+</body></html>

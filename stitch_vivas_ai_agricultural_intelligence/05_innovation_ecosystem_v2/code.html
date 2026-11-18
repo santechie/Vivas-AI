@@ -1,0 +1,362 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Innovation Ecosystem - Vivas AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=JetBrains+Mono:wght@500&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-container": "#316e52",
+                    "on-secondary-fixed-variant": "#0e5138",
+                    "secondary-fixed-dim": "#95d4b3",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed-variant": "#274e3d",
+                    "on-secondary-fixed": "#002114",
+                    "surface-container-high": "#e5e8ee",
+                    "on-surface-variant": "#414844",
+                    "surface-container": "#ebeef3",
+                    "on-primary-container": "#86af99",
+                    "surface": "#f7f9ff",
+                    "on-primary": "#ffffff",
+                    "surface-dim": "#d7dadf",
+                    "on-tertiary-container": "#cd9d6d",
+                    "outline": "#717973",
+                    "inverse-surface": "#2d3135",
+                    "tertiary-fixed": "#ffdcbd",
+                    "on-surface": "#181c20",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed": "#b1f0ce",
+                    "tertiary": "#3b1f00",
+                    "primary-container": "#1b4332",
+                    "inverse-on-surface": "#eef1f6",
+                    "primary-fixed-dim": "#a5d0b9",
+                    "background": "#f7f9ff",
+                    "surface-bright": "#f7f9ff",
+                    "surface-container-low": "#f1f4f9",
+                    "primary-fixed": "#c1ecd4",
+                    "primary": "#012d1d",
+                    "on-background": "#181c20",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-fixed-dim": "#f0bd8b",
+                    "surface-variant": "#e0e3e8",
+                    "surface-container-highest": "#e0e3e8",
+                    "on-error-container": "#93000a",
+                    "secondary": "#2c694e",
+                    "outline-variant": "#c1c8c2",
+                    "secondary-container": "#aeeecb",
+                    "surface-tint": "#3f6653",
+                    "inverse-primary": "#a5d0b9",
+                    "error": "#ba1a1a",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed-variant": "#623f18",
+                    "on-primary-fixed": "#002114",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed": "#2c1600",
+                    "tertiary-container": "#56340e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-desktop": "64px",
+                    "container-max": "1280px",
+                    "gutter": "24px",
+                    "margin-mobile": "20px",
+                    "unit": "8px"
+            },
+            "fontFamily": {
+                    "display-lg": [
+                            "Montserrat"
+                    ],
+                    "headline-lg": [
+                            "Montserrat"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "label-sm": [
+                            "JetBrains Mono"
+                    ],
+                    "label-md": [
+                            "JetBrains Mono"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "headline-md": [
+                            "Montserrat"
+                    ],
+                    "headline-lg-mobile": [
+                            "Montserrat"
+                    ]
+            },
+            "fontSize": {
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "label-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            background-image: radial-gradient(theme('colors.outline-variant') 1px, transparent 1px);
+            background-size: 8px 8px;
+        }
+        
+        .hex-shape {
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+        
+        .node-line {
+            stroke: theme('colors.outline-variant');
+            stroke-width: 1px;
+            fill: none;
+        }
+    </style>
+</head>
+<body class="text-on-background min-h-screen flex flex-col font-body-md antialiased">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline flat no shadows flex justify-between items-center w-full px-margin-desktop py-4 docked full-width top-0 sticky z-50">
+<div class="h-8"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKsLH6ru7Intp1XvpWuoNI1zm31gS1LcN-0BPNyqQEG_lcQzx9UDNDYhMklYxIfyI7mJUjVHcBYYCcT4tbi4XhzsqBYxb1KAVY68sudyeCsfbXfjvkqe3reYDWUXCM0x9DznC2zOBtdUlxblGrraJ3Nt9lf32eilaN6qip33YKuoV6pKEBI4w0fNXQo1yRPiBp70dk0ZnkLWhD8kcVMaz2oArnkYgJC9k-55EF30jRZDKODzBIwpq1Rk6Ljo0mY4q9mpc" alt="Vivas AI Logo" class="h-full w-auto object-contain"></div>
+<div class="hidden md:flex gap-gutter items-center">
+<!-- TopAppBar doesn't list labels, but acts as a global header for presentation slides. We'll use the trailing action. -->
+<span class="text-secondary dark:text-secondary-fixed-dim font-headline-md text-headline-md font-label-md text-label-md">Slide 01/05</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full max-w-container-max mx-auto px-margin-desktop py-12 flex flex-col gap-10">
+<!-- Header Section -->
+<section class="flex flex-col gap-4">
+<h1 class="font-display-lg text-display-lg text-primary tracking-tight">Innovation Ecosystem</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-3xl">Architecting the future of agricultural intelligence through a distributed network of leading research institutions, advanced laboratories, and continuous field validation protocols.</p>
+</section>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter flex-grow">
+<!-- Node Link Diagram (Main Area) -->
+<div class="lg:col-span-8 bg-surface-container-lowest rounded-xl border border-outline-variant relative overflow-hidden flex items-center justify-center min-h-[500px]">
+<!-- Ambient Shadow Layer -->
+<div class="absolute inset-0 bg-primary-fixed opacity-5 blur-3xl"></div>
+<!-- Vector Connections (SVG Background) -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none z-0" preserveAspectRatio="none">
+<!-- Lines connecting center to nodes -->
+<line class="node-line" x1="50%" x2="20%" y1="50%" y2="20%"></line>
+<line class="node-line" x1="50%" x2="80%" y1="50%" y2="20%"></line>
+<line class="node-line" x1="50%" x2="20%" y1="50%" y2="80%"></line>
+<line class="node-line" x1="50%" x2="80%" y1="50%" y2="80%"></line>
+<!-- Plus Marks at Grid Intersections (simulated) -->
+<g stroke="theme('colors.outline-variant')" stroke-width="1">
+<line x1="20%" x2="20%" y1="calc(20% - 4px)" y2="calc(20% + 4px)"></line>
+<line x1="calc(20% - 4px)" x2="calc(20% + 4px)" y1="20%" y2="20%"></line>
+</g>
+</svg>
+<div class="relative z-10 w-full h-full flex items-center justify-center">
+<!-- Top Left Node -->
+<div class="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 bg-surface-container rounded-lg border border-outline-variant p-4 w-48 shadow-sm">
+<div class="font-label-sm text-label-sm text-on-surface-variant mb-1">NODE_01 // ACADEMIA</div>
+<div class="font-headline-md text-headline-md text-primary mb-2">Universities</div>
+<div class="font-label-md text-label-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">school</span> Research • Talent
+                        </div>
+</div>
+<!-- Top Right Node -->
+<div class="absolute top-1/4 right-1/4 translate-x-1/2 -translate-y-1/2 bg-surface-container rounded-lg border border-outline-variant p-4 w-48 shadow-sm">
+<div class="font-label-sm text-label-sm text-on-surface-variant mb-1">NODE_02 // R&amp;D</div>
+<div class="font-headline-md text-headline-md text-primary mb-2">Labs</div>
+<div class="font-label-md text-label-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">science</span> Protocol • Testing
+                        </div>
+</div>
+<!-- Center Hub -->
+<div class="hex-shape bg-primary text-on-primary w-64 h-64 flex flex-col items-center justify-center p-6 text-center border-4 border-surface shadow-lg relative z-20">
+<span class="material-symbols-outlined text-4xl mb-2 text-secondary-fixed">hub</span>
+<h2 class="font-headline-lg text-headline-lg font-bold leading-tight">SAN R&amp;D<br>Innovation<br>Hub</h2>
+</div>
+<!-- Bottom Left Node -->
+<div class="absolute bottom-1/4 left-1/4 -translate-x-1/2 translate-y-1/2 bg-surface-container rounded-lg border border-outline-variant p-4 w-48 shadow-sm">
+<div class="font-label-sm text-label-sm text-on-surface-variant mb-1">NODE_03 // COMMERCE</div>
+<div class="font-headline-md text-headline-md text-primary mb-2">Industry</div>
+<div class="font-label-md text-label-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">factory</span> Scale • Supply
+                        </div>
+</div>
+<!-- Bottom Right Node -->
+<div class="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 bg-surface-container rounded-lg border border-outline-variant p-4 w-48 shadow-sm">
+<div class="font-label-sm text-label-sm text-on-surface-variant mb-1">NODE_04 // APPLIED</div>
+<div class="font-headline-md text-headline-md text-primary mb-2">Field Val</div>
+<div class="font-label-md text-label-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">agriculture</span> Data • Metrics
+                        </div>
+</div>
+</div>
+</div>
+<!-- Sidebar: Laboratory Intel -->
+<div class="lg:col-span-4 flex flex-col gap-gutter">
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 h-full shadow-sm flex flex-col">
+<div class="font-label-sm text-label-sm text-on-surface-variant mb-4 tracking-widest border-b border-outline-variant pb-2">LABORATORY INTEL // ACTIVE</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-6">Calibration Metrics</h3>
+<div class="flex flex-col gap-6 flex-grow">
+<!-- Seed Lab -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-end">
+<div class="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-sm">grass</span> Seed Lab Alpha
+                                </div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">94%</div>
+</div>
+<!-- Calibration Bar -->
+<div class="h-2 w-full bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-tertiary-container w-[94%]"></div>
+</div>
+<div class="font-body-sm text-xs text-on-surface-variant">Viability Index Nominal</div>
+</div>
+<!-- Phyto Lab -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-end">
+<div class="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-sm">biotech</span> Phyto Analytics
+                                </div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">88%</div>
+</div>
+<!-- Calibration Bar -->
+<div class="h-2 w-full bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-tertiary-container w-[88%]"></div>
+</div>
+<div class="font-body-sm text-xs text-on-surface-variant">Pathogen Resistance Scan</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Strategy Pipeline Sequence -->
+<section class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm mt-4">
+<div class="font-label-sm text-label-sm text-on-surface-variant mb-4 tracking-widest border-b border-outline-variant pb-2">STRATEGY PIPELINE // SEQUENCE</div>
+<div class="flex flex-col md:flex-row justify-between items-center gap-4 relative pt-4">
+<!-- Connecting Line (Desktop) -->
+<div class="hidden md:block absolute top-1/2 left-0 w-full h-[1px] bg-outline-variant -z-10 translate-y-2"></div>
+<!-- Step 1 -->
+<div class="bg-surface border border-outline-variant rounded-lg p-4 w-full md:w-1/4 flex flex-col items-center text-center shadow-sm">
+<div class="bg-secondary text-on-secondary rounded-full w-8 h-8 flex items-center justify-center font-label-md mb-3 z-10 relative">1</div>
+<div class="font-label-md text-label-md font-bold text-primary mb-1">Research</div>
+<div class="font-body-md text-sm text-on-surface-variant">Hypothesis Generation</div>
+</div>
+<!-- Arrow (Mobile) -->
+<div class="md:hidden text-outline-variant">
+<span class="material-symbols-outlined">arrow_downward</span>
+</div>
+<!-- Step 2 -->
+<div class="bg-surface border border-outline-variant rounded-lg p-4 w-full md:w-1/4 flex flex-col items-center text-center shadow-sm">
+<div class="bg-secondary text-on-secondary rounded-full w-8 h-8 flex items-center justify-center font-label-md mb-3 z-10 relative">2</div>
+<div class="font-label-md text-label-md font-bold text-primary mb-1">Validation</div>
+<div class="font-body-md text-sm text-on-surface-variant">Empirical Testing</div>
+</div>
+<!-- Arrow (Mobile) -->
+<div class="md:hidden text-outline-variant">
+<span class="material-symbols-outlined">arrow_downward</span>
+</div>
+<!-- Step 3 -->
+<div class="bg-surface border border-outline-variant rounded-lg p-4 w-full md:w-1/4 flex flex-col items-center text-center shadow-sm">
+<div class="bg-secondary text-on-secondary rounded-full w-8 h-8 flex items-center justify-center font-label-md mb-3 z-10 relative">3</div>
+<div class="font-label-md text-label-md font-bold text-primary mb-1">Engineering</div>
+<div class="font-body-md text-sm text-on-surface-variant">System Integration</div>
+</div>
+<!-- Arrow (Mobile) -->
+<div class="md:hidden text-outline-variant">
+<span class="material-symbols-outlined">arrow_downward</span>
+</div>
+<!-- Step 4 -->
+<div class="bg-surface border border-outline-variant rounded-lg p-4 w-full md:w-1/4 flex flex-col items-center text-center shadow-sm border-secondary">
+<div class="bg-tertiary-container text-on-tertiary-container rounded-full w-8 h-8 flex items-center justify-center font-label-md mb-3 z-10 relative">4</div>
+<div class="font-label-md text-label-md font-bold text-primary mb-1">Deployment</div>
+<div class="font-body-md text-sm text-on-surface-variant">Field Execution</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<footer class="w-full max-w-container-max mx-auto px-margin-desktop py-6 border-t border-outline-variant flex justify-between items-center text-on-surface-variant font-label-sm text-label-sm"><div class="opacity-60">© SAN R&amp;D Business Solutions</div><div class="hidden md:block opacity-40">Agricultural Intelligence Systems</div></footer><nav class="bg-surface-container-low dark:bg-surface-container-lowest border-t border-outline-variant flat no shadows fixed bottom-0 left-0 w-full z-50 flex justify-center gap-gutter items-center py-4 bg-surface-container-low/80 backdrop-blur-md md:hidden">
+<!-- Previous (Inactive) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-fixed-variant px-6 py-2 hover:text-primary dark:hover:text-primary-fixed transition-all">
+<span class="material-symbols-outlined" data-icon="arrow_back_ios">arrow_back_ios</span>
+<span class="font-label-md text-label-md mt-1">Previous</span>
+</button>
+<!-- Overview (Active based on context of 'Overviewing' the Ecosystem) -->
+<button class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-xl px-6 py-2 hover:text-primary dark:hover:text-primary-fixed transition-all scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="grid_view" style="font-variation-settings: 'FILL' 1;">grid_view</span>
+<span class="font-label-md text-label-md mt-1">Overview</span>
+</button>
+<!-- Next (Inactive) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-fixed-variant px-6 py-2 hover:text-primary dark:hover:text-primary-fixed transition-all">
+<span class="material-symbols-outlined" data-icon="arrow_forward_ios">arrow_forward_ios</span>
+<span class="font-label-md text-label-md mt-1">Next</span>
+</button>
+</nav>
+
+
+</body></html>

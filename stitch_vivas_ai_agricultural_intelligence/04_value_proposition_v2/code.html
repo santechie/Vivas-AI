@@ -1,0 +1,374 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Stakeholder Value - Vivas AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&amp;family=JetBrains+Mono:wght@500&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-container": "#316e52",
+                      "on-secondary-fixed-variant": "#0e5138",
+                      "secondary-fixed-dim": "#95d4b3",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-fixed-variant": "#274e3d",
+                      "on-secondary-fixed": "#002114",
+                      "surface-container-high": "#e5e8ee",
+                      "on-surface-variant": "#414844",
+                      "surface-container": "#ebeef3",
+                      "on-primary-container": "#86af99",
+                      "surface": "#f7f9ff",
+                      "on-primary": "#ffffff",
+                      "surface-dim": "#d7dadf",
+                      "on-tertiary-container": "#cd9d6d",
+                      "outline": "#717973",
+                      "inverse-surface": "#2d3135",
+                      "tertiary-fixed": "#ffdcbd",
+                      "on-surface": "#181c20",
+                      "on-secondary": "#ffffff",
+                      "secondary-fixed": "#b1f0ce",
+                      "tertiary": "#3b1f00",
+                      "primary-container": "#1b4332",
+                      "inverse-on-surface": "#eef1f6",
+                      "primary-fixed-dim": "#a5d0b9",
+                      "background": "#f7f9ff",
+                      "surface-bright": "#f7f9ff",
+                      "surface-container-low": "#f1f4f9",
+                      "primary-fixed": "#c1ecd4",
+                      "primary": "#012d1d",
+                      "on-background": "#181c20",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-fixed-dim": "#f0bd8b",
+                      "surface-variant": "#e0e3e8",
+                      "surface-container-highest": "#e0e3e8",
+                      "on-error-container": "#93000a",
+                      "secondary": "#2c694e",
+                      "outline-variant": "#c1c8c2",
+                      "secondary-container": "#aeeecb",
+                      "surface-tint": "#3f6653",
+                      "inverse-primary": "#a5d0b9",
+                      "error": "#ba1a1a",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-fixed-variant": "#623f18",
+                      "on-primary-fixed": "#002114",
+                      "on-error": "#ffffff",
+                      "on-tertiary-fixed": "#2c1600",
+                      "tertiary-container": "#56340e"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "margin-desktop": "64px",
+                      "container-max": "1280px",
+                      "gutter": "24px",
+                      "margin-mobile": "20px",
+                      "unit": "8px"
+              },
+              "fontFamily": {
+                      "display-lg": [
+                              "Montserrat"
+                      ],
+                      "headline-lg": [
+                              "Montserrat"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "label-md": [
+                              "JetBrains Mono"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "headline-lg-mobile": [
+                              "Montserrat"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        /* Base Styles & Satellite Tech Overlays */
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+            background-image: radial-gradient(theme('colors.outline-variant') 1px, transparent 1px);
+            background-size: 24px 24px; /* Aligning to 8px base, roughly grid size */
+            background-position: -1px -1px;
+            position: relative;
+        }
+        
+        /* Subtle Technical Intersections */
+        .tech-cross {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+        }
+        .tech-cross::before, .tech-cross::after {
+            content: '';
+            position: absolute;
+            background-color: theme('colors.outline');
+        }
+        .tech-cross::before { top: 3px; left: 0; width: 8px; height: 2px; }
+        .tech-cross::after { top: 0; left: 3px; width: 2px; height: 8px; }
+
+        .ambient-shadow {
+            box-shadow: 0 10px 40px -10px rgba(1, 45, 29, 0.08);
+        }
+
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined', sans-serif;
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+<!-- TopAppBar from JSON -->
+<header class="hidden md:flex justify-between items-center w-full px-margin-desktop py-4 bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline flat no shadows sticky top-0 z-50">
+<div class="flex items-center gap-gutter">
+<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_lFrG2o6bFtPW_qifvZlcq_Qib0k5tQw15U5SwHTohGDVDLzNKyBY3YKe32klQUiv5Da3zya8YX-fuUapGBeoa76ad5vNB-_m-Tl1507Qiwzzi2tc7sb4KsQ5EKQxRqGRCuMvwKMU3d1SGaixEwasE2cAxkshKdJ17uAvea_CZa7midF4C6lHOXkZ7ctVv9quj2WIQAQQXYtvYlAobJkf2DWDgrgAfP2wk6_S6wNAsnUECOoXoQgzDz65KnnNL5keTl0" alt="Vivas AI Logo" class="h-8 w-auto object-contain">
+</div>
+<nav class="flex gap-8">
+<a class="text-secondary dark:text-secondary-fixed-dim font-bold font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded px-2 py-1 flex items-center" href="#">
+                Stakeholder Value
+            </a>
+<a class="text-on-surface-variant dark:text-on-secondary-fixed-variant font-label-md text-label-md hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded px-2 py-1 flex items-center" href="#">
+                Platform
+            </a>
+</nav>
+<div class="flex items-center gap-4">
+<span class="font-label-md text-label-md text-secondary dark:text-secondary-fixed-dim border border-outline-variant px-3 py-1 rounded">Slide 04/05</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-20 relative z-10 flex flex-col gap-12 md:gap-20">
+<!-- Technical Crosses for aesthetic -->
+<div class="tech-cross top-0 left-0 hidden md:block"></div>
+<div class="tech-cross top-0 right-0 hidden md:block"></div>
+<!-- Header Section -->
+<header class="mb-4">
+<p class="font-label-md text-label-md text-secondary uppercase tracking-widest mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">stacked_line_chart</span>
+                Value Proposition
+            </p>
+<h1 class="font-display-lg text-display-lg text-primary max-w-3xl">
+                Dual-Threat Impact: Maximizing Yield &amp; Governance
+            </h1>
+</header>
+<!-- Comparative Layout (Bento Grid Style) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter items-stretch">
+<!-- Left Section: Target // Farmers -->
+<section class="bg-surface-container-lowest border border-outline-variant p-8 md:p-12 relative flex flex-col ambient-shadow">
+<!-- Label -->
+<div class="absolute top-0 left-0 bg-secondary text-on-secondary font-label-sm text-label-sm px-3 py-1">
+                    TARGET // FARMERS
+                </div>
+<div class="mt-8 flex-grow">
+<h2 class="font-headline-lg text-headline-lg text-primary mb-6">Empowering the Ground Level</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-10 max-w-md">
+                        Direct intervention at the micro-level. Our predictive models optimize resource allocation, drastically reducing waste and maximizing crop output.
+                    </p>
+<!-- High Impact Metric -->
+<div class="mb-12 border-l-4 border-tertiary-container pl-6 py-2">
+<div class="font-display-lg text-display-lg text-primary leading-tight">50%</div>
+<div class="font-label-md text-label-md text-on-surface-variant mt-1">Projected Income Increment</div>
+</div>
+<!-- Progress Bar Visualizations -->
+<div class="space-y-6">
+<div>
+<div class="flex justify-between font-label-sm text-label-sm text-on-surface mb-2">
+<span class="">RESOURCE SAVINGS (WATER/FERTILIZER)</span>
+<span class="">+35%</span>
+</div>
+<div class="h-2 w-full bg-surface-variant relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full bg-secondary w-[35%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-label-sm text-label-sm text-on-surface mb-2">
+<span class="">YIELD PRODUCTIVITY</span>
+<span class="">+42%</span>
+</div>
+<div class="h-2 w-full bg-surface-variant relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full bg-tertiary-container w-[42%]"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Section: Target // Government -->
+<section class="bg-surface-container-low border border-outline-variant p-8 md:p-12 relative flex flex-col">
+<!-- Label -->
+<div class="absolute top-0 left-0 bg-primary-container text-on-primary-container font-label-sm text-label-sm px-3 py-1 border-r border-b border-outline-variant">
+                    TARGET // GOVERNMENT
+                </div>
+<div class="mt-8 flex-grow">
+<h2 class="font-headline-lg text-headline-lg text-primary mb-6">Macro Intelligence Layers</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-10">
+                        Strategic oversight requires actionable, unified data. We transition fragmented agricultural data into a cohesive policy engine.
+                    </p>
+<!-- Enterprise Hierarchy List -->
+<div class="space-y-4">
+<!-- Layer 1 -->
+<div class="flex items-start gap-4 p-4 bg-surface border border-outline-variant hover:border-secondary transition-colors cursor-default">
+<div class="bg-surface-variant p-2 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary">map</span>
+</div>
+<div>
+<h3 class="font-label-md text-label-md text-primary mb-1">Layer 01 // Geospatial Planning</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Macro-level crop suitability analysis and land-use optimization.</p>
+</div>
+</div>
+<!-- Layer 2 -->
+<div class="flex items-start gap-4 p-4 bg-surface border border-outline-variant hover:border-secondary transition-colors cursor-default ml-4 relative">
+<!-- Connector line -->
+<div class="absolute -left-4 top-1/2 w-4 border-t border-outline-variant border-dashed hidden md:block"></div>
+<div class="bg-surface-variant p-2 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary">crisis_alert</span>
+</div>
+<div>
+<h3 class="font-label-md text-label-md text-primary mb-1">Layer 02 // Rapid Intervention</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Real-time alerts for localized pest outbreaks and climate anomalies.</p>
+</div>
+</div>
+<!-- Layer 3 -->
+<div class="flex items-start gap-4 p-4 bg-surface border border-outline-variant hover:border-secondary transition-colors cursor-default ml-8 relative">
+<!-- Connector line -->
+<div class="absolute -left-4 top-1/2 w-4 border-t border-outline-variant border-dashed hidden md:block"></div>
+<div class="bg-surface-variant p-2 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary">gavel</span>
+</div>
+<div>
+<h3 class="font-label-md text-label-md text-primary mb-1">Layer 03 // Policy Engine</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Data-driven subsidy allocation and national food security modeling.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- CEO Quote Card -->
+<section class="bg-primary text-on-primary p-8 md:p-12 relative overflow-hidden flex flex-col md:flex-row items-center gap-8 md:gap-12 mt-4 shadow-xl">
+<!-- Abstract background elements for quote card -->
+<div class="absolute top-0 right-0 w-64 h-64 bg-secondary opacity-20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+<div class="shrink-0 flex flex-col items-center gap-4 relative z-10">
+<div class="w-24 h-24 rounded-full border-2 border-secondary p-1 bg-surface-container-lowest">
+<img class="w-full h-full object-cover rounded-full" data-alt="A professional headshot of an executive in a modern, well-lit corporate office setting. The lighting is crisp and cool, reflecting a high-tech agricultural AI context. The subject looks confident and visionary. The background is slightly blurred with subtle hints of greenery and modern architecture, establishing a high-end, institutional aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVkcabLa0PfegYCaapIYD0C0XUZa82U9cqXZQjc5AjNhe2Oy1Or6-WprMivz6chGs1nilN-uo7cLTQyq3mvhO76TAJWRB4mqvFaTCoP_-1lqarX4hdzE-4pH58_N7nscav-5vsS-dIX41xQs0pvRHDXBCnmwkBA8yctPuRmX_YTv2CTar16ZRw1hCJcyDcgqEm3TJJCb7-Pxp-FODAf9BlkWm1mn18Sutzxzoc9tgAs_aKIvQSLp4FkDyzuk4Fk1eSyglmYuAvgr6ryUw">
+</div>
+<div class="text-center">
+<div class="font-label-md text-label-md font-bold">Dr. Gopikrishna Santhanam</div>
+<div class="font-label-sm text-label-sm text-primary-fixed-dim">CEO, Vivas AI</div>
+</div>
+</div>
+<div class="relative z-10 flex-grow">
+<span class="material-symbols-outlined text-5xl text-secondary opacity-50 absolute -top-4 -left-6">format_quote</span>
+<blockquote class="font-headline-md text-headline-md md:text-headline-lg md:font-headline-lg leading-relaxed relative z-10 text-on-primary">
+                    "We don't just give governments more data. We synthesize fragmented telemetry into a unified intelligence protocol that fundamentally derisks national agriculture."
+                 </blockquote>
+</div>
+</section>
+</main>
+<!-- BottomNavBar from JSON (Mobile Only) -->
+<footer class="w-full px-margin-desktop py-8 border-t border-outline-variant bg-surface text-center">
+    <p class="font-label-md text-label-md text-on-surface-variant">© SAN R&amp;D Business Solutions</p>
+</footer><nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-center gap-gutter items-center py-4 bg-surface-container-low/80 backdrop-blur-md border-t border-outline-variant flat no shadows">
+<!-- Previous -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-fixed-variant px-6 py-2 hover:text-primary dark:hover:text-primary-fixed transition-all group">
+<span class="material-symbols-outlined group-active:scale-95 duration-150 mb-1">arrow_back_ios</span>
+<span class="font-label-sm text-label-sm">Previous</span>
+</button>
+<!-- Overview (Active based on context of a slide deck) -->
+<button class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-xl px-6 py-2 hover:text-primary dark:hover:text-primary-fixed transition-all group">
+<span class="material-symbols-outlined fill-icon group-active:scale-95 duration-150 mb-1">grid_view</span>
+<span class="font-label-sm text-label-sm">Overview</span>
+</button>
+<!-- Next -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-fixed-variant px-6 py-2 hover:text-primary dark:hover:text-primary-fixed transition-all group">
+<span class="material-symbols-outlined group-active:scale-95 duration-150 mb-1">arrow_forward_ios</span>
+<span class="font-label-sm text-label-sm">Next</span>
+</button>
+</nav>
+
+
+</body></html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html><html class="h-full" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Predictive Intelligence - Vivas AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#316e52",
+                        "on-secondary-fixed-variant": "#0e5138",
+                        "secondary-fixed-dim": "#95d4b3",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#274e3d",
+                        "on-secondary-fixed": "#002114",
+                        "surface-container-high": "#e5e8ee",
+                        "on-surface-variant": "#414844",
+                        "surface-container": "#ebeef3",
+                        "on-primary-container": "#86af99",
+                        "surface": "#f7f9ff",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#d7dadf",
+                        "on-tertiary-container": "#cd9d6d",
+                        "outline": "#717973",
+                        "inverse-surface": "#2d3135",
+                        "tertiary-fixed": "#ffdcbd",
+                        "on-surface": "#181c20",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed": "#b1f0ce",
+                        "tertiary": "#3b1f00",
+                        "primary-container": "#1b4332",
+                        "inverse-on-surface": "#eef1f6",
+                        "primary-fixed-dim": "#a5d0b9",
+                        "background": "#f7f9ff",
+                        "surface-bright": "#f7f9ff",
+                        "surface-container-low": "#f1f4f9",
+                        "primary-fixed": "#c1ecd4",
+                        "primary": "#012d1d",
+                        "on-background": "#181c20",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#f0bd8b",
+                        "surface-variant": "#e0e3e8",
+                        "surface-container-highest": "#e0e3e8",
+                        "on-error-container": "#93000a",
+                        "secondary": "#2c694e",
+                        "outline-variant": "#c1c8c2",
+                        "secondary-container": "#aeeecb",
+                        "surface-tint": "#3f6653",
+                        "inverse-primary": "#a5d0b9",
+                        "error": "#ba1a1a",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#623f18",
+                        "on-primary-fixed": "#002114",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed": "#2c1600",
+                        "tertiary-container": "#56340e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "64px",
+                        "container-max": "1280px",
+                        "gutter": "24px",
+                        "margin-mobile": "20px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["JetBrains Mono"],
+                        "label-md": ["JetBrains Mono"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Montserrat"],
+                        "headline-lg-mobile": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            background-image: radial-gradient(theme('colors.outline-variant') 1px, transparent 1px);
+            background-size: 8px 8px;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col text-on-background overflow-x-hidden antialiased">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-margin-desktop py-4 bg-surface border-b border-outline-variant docked full-width top-0 z-10 sticky">
+<div class="flex items-center gap-4">
+<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrZGW8lvVrGHXRViMQ0vGcpBBSM8FqVmiJZv5ODYNOpVLpxUrAp5tbObJD41kyy8q4EtVw60f3ftyhLx9hOsvt0pplcMndYVo16GlM-MBSh0oo_E1oaLGFrDr2LYZlw-eHBTDyEWsRqDt5EHW8ogAvIcWkADI2qIxU1qUdIYu8jQ5CO-sbVnw500PdCCb6Kc191XGFdMjWIOQy8OzFZj7cjfsU2f6NUdPPNLvS8CRSezIKYeG8eGh_70XuijrXPGUJFwA" alt="Vivas AI Logo" class="h-16 w-auto object-contain">
+</div>
+<div class="hidden md:flex items-center gap-gutter">
+<nav class="flex gap-4">
+<a class="font-label-md text-label-md text-secondary font-bold hover:bg-surface-container-high transition-colors px-3 py-1 rounded" href="#">Slide 02/05</a>
+</nav>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow w-full max-w-container-max mx-auto px-margin-desktop py-10 flex flex-col gap-10">
+<!-- Header -->
+<section class="flex flex-col gap-2 border-b border-outline-variant pb-6 relative">
+<div class="absolute right-0 top-0 flex items-center gap-2 bg-surface-container-low border border-outline-variant px-3 py-1 rounded">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-label-sm text-label-sm text-on-surface">VALIDATED DEPLOYMENT</span>
+</div>
+<p class="font-label-md text-label-md text-secondary tracking-widest uppercase">01 — Predictive Intelligence</p>
+<h1 class="font-display-lg text-display-lg text-primary">Forecasting with Precision</h1>
+</section>
+<!-- Bento Grid Dashboard -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter flex-grow">
+<!-- Left: The Challenge Card -->
+<div class="lg:col-span-4 bg-surface-container border border-outline-variant rounded-lg p-6 flex flex-col gap-4 relative overflow-hidden shadow-sm">
+<div class="absolute top-2 left-2 flex items-center gap-1 opacity-50">
+<span class="w-1 h-1 bg-primary rounded-full"></span><span class="w-1 h-1 bg-primary rounded-full"></span>
+</div>
+<div class="absolute top-0 right-0 w-16 h-16 bg-error-container rounded-bl-full -z-10 opacity-50"></div>
+<h2 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest border-b border-outline-variant pb-2">SYS_MSG // THE CHALLENGE</h2>
+<div class="flex-grow flex flex-col justify-center gap-6">
+<div>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">Climate Volatility</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Traditional forecasting methods fail to account for micro-climate shifts, leading to unexpected crop distress.</p>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">Resource Misallocation</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Reactive interventions result in over-watering and excessive chemical application, degrading soil health.</p>
+</div>
+</div>
+<img class="w-full h-32 object-cover rounded border border-outline-variant grayscale opacity-80 mix-blend-multiply" data-alt="A macro shot of parched, cracked earth in an agricultural field. The scene highlights the challenge of resource management. The lighting is harsh, midday sun, casting deep shadows in the cracks. The style is stark and realistic, emphasizing the need for precision agriculture. The overall color palette features earthy browns and desaturated tones, contrasting with the high-tech institutional UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhixKZG9teInIMLODRSCbG-jR3h1UcLCiU1V3OKSjNEJBg9CzRi4ZKAgSk7y2AlJumZliHg6uWiDDw27qet9xSSKkD82Y0SDHIiNLMFIpRJ_Abrlw7IX8_y5jSANkl6fABERwIxB3zam6G4ayV5ICYiaX_4n82MPsiZvsXLpL8LyX8crF7kUm2bDRHc-RNzvU68DIVxcyKpvxW72sub6T69ferlqBPQ7d_RFNDUoqZAxb_eonawhZw3Q">
+</div>
+<!-- Center: Integrated Stack Visual -->
+<div class="lg:col-span-5 bg-surface border border-outline-variant rounded-lg p-6 flex flex-col gap-4 relative shadow-sm">
+<h2 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest border-b border-outline-variant pb-2">DATA_FLOW // INTEGRATED STACK</h2>
+<div class="flex-grow flex flex-col items-center justify-center relative py-10">
+<!-- Central Node -->
+<div class="w-32 h-32 rounded-full border border-secondary bg-surface-container flex items-center justify-center relative z-10 shadow-[0_0_15px_rgba(44,105,78,0.1)]">
+<div class="text-center">
+<span class="material-symbols-outlined text-4xl text-secondary mb-1">memory</span>
+<p class="font-label-sm text-label-sm text-primary font-bold">VIVAS CORE</p>
+</div>
+<!-- Connection Lines (SVG) -->
+<svg class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] -z-10 pointer-events-none" viewBox="0 0 300 300">
+<line stroke="#c1c8c2" stroke-dasharray="4 4" stroke-width="1" x1="150" x2="50" y1="150" y2="50"></line>
+<line stroke="#c1c8c2" stroke-dasharray="4 4" stroke-width="1" x1="150" x2="250" y1="150" y2="50"></line>
+<line stroke="#c1c8c2" stroke-dasharray="4 4" stroke-width="1" x1="150" x2="150" y1="150" y2="250"></line>
+</svg>
+</div>
+<!-- Orbiting Nodes -->
+<div class="absolute top-4 left-4 bg-primary-container text-on-primary-container px-3 py-1 rounded border border-on-primary-container flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">psychology</span>
+<span class="font-label-sm text-label-sm">AI/ML ENGINE</span>
+</div>
+<div class="absolute top-4 right-4 bg-secondary-container text-on-secondary-container px-3 py-1 rounded border border-on-secondary-container flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">flight</span>
+<span class="font-label-sm text-label-sm">AERIAL TELEMETRY</span>
+</div>
+<div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-surface-container-high text-on-surface px-3 py-1 rounded border border-outline flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">sensors</span>
+<span class="font-label-sm text-label-sm">SOIL IOT SENSORS</span>
+</div>
+</div>
+</div>
+<!-- Right: Field Results -->
+<div class="lg:col-span-3 flex flex-col gap-gutter">
+<div class="bg-surface border border-outline-variant rounded-lg p-6 flex-1 flex flex-col justify-center relative shadow-sm hover:bg-surface-container-low transition-colors">
+<div class="absolute top-2 right-2 text-outline-variant">
+<span class="material-symbols-outlined">trending_up</span>
+</div>
+<h2 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest mb-1">METRIC_01 // ACCURACY</h2>
+<p class="font-display-lg text-[64px] leading-tight font-bold text-tertiary-container">84%</p>
+<p class="font-body-md text-body-md text-on-surface mt-2 border-t border-outline-variant pt-2">Predictive modeling accuracy for micro-climate events.</p>
+</div>
+<div class="bg-surface border border-outline-variant rounded-lg p-6 flex-1 flex flex-col justify-center relative shadow-sm hover:bg-surface-container-low transition-colors">
+<div class="absolute top-2 right-2 text-outline-variant">
+<span class="material-symbols-outlined">eco</span>
+</div>
+<h2 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest mb-1">METRIC_02 // OPTIMIZATION</h2>
+<p class="font-display-lg text-[64px] leading-tight font-bold text-tertiary-container">89%</p>
+<p class="font-body-md text-body-md text-on-surface mt-2 border-t border-outline-variant pt-2">Improvement in targeted yield optimization.</p>
+</div>
+</div>
+</section>
+</main><footer class="w-full px-margin-desktop py-6 border-t border-outline-variant bg-surface mt-auto">
+  <div class="max-w-container-max mx-auto flex justify-between items-center">
+    <p class="font-label-sm text-label-sm text-on-surface-variant">(C) SAN R&amp;D Business Solutions</p>
+    <div class="flex gap-4">
+      <span class="font-label-sm text-label-sm text-outline-variant uppercase tracking-widest">Proprietary Intelligence</span>
+    </div>
+  </div>
+</footer>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-center gap-gutter items-center py-4 bg-surface-container-low/80 backdrop-blur-md border-t border-outline-variant">
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-6 py-2 hover:text-primary transition-all">
+<span class="material-symbols-outlined">arrow_back_ios</span>
+<span class="font-label-md text-label-md mt-1">Previous</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-xl px-6 py-2 hover:text-primary transition-all scale-95 duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">grid_view</span>
+<span class="font-label-md text-label-md mt-1 font-bold">Overview</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-6 py-2 hover:text-primary transition-all">
+<span class="material-symbols-outlined">arrow_forward_ios</span>
+<span class="font-label-md text-label-md mt-1">Next</span>
+</button>
+</nav>
+
+
+</body></html>

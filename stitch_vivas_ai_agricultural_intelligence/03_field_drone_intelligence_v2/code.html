@@ -1,0 +1,270 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Slide 03: Field &amp; Drone Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#316e52",
+                        "on-secondary-fixed-variant": "#0e5138",
+                        "secondary-fixed-dim": "#95d4b3",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#274e3d",
+                        "on-secondary-fixed": "#002114",
+                        "surface-container-high": "#e5e8ee",
+                        "on-surface-variant": "#414844",
+                        "surface-container": "#ebeef3",
+                        "on-primary-container": "#86af99",
+                        "surface": "#f7f9ff",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#d7dadf",
+                        "on-tertiary-container": "#cd9d6d",
+                        "outline": "#717973",
+                        "inverse-surface": "#2d3135",
+                        "tertiary-fixed": "#ffdcbd",
+                        "on-surface": "#181c20",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed": "#b1f0ce",
+                        "tertiary": "#3b1f00",
+                        "primary-container": "#1b4332",
+                        "inverse-on-surface": "#eef1f6",
+                        "primary-fixed-dim": "#a5d0b9",
+                        "background": "#f7f9ff",
+                        "surface-bright": "#f7f9ff",
+                        "surface-container-low": "#f1f4f9",
+                        "primary-fixed": "#c1ecd4",
+                        "primary": "#012d1d",
+                        "on-background": "#181c20",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#f0bd8b",
+                        "surface-variant": "#e0e3e8",
+                        "surface-container-highest": "#e0e3e8",
+                        "on-error-container": "#93000a",
+                        "secondary": "#2c694e",
+                        "outline-variant": "#c1c8c2",
+                        "secondary-container": "#aeeecb",
+                        "surface-tint": "#3f6653",
+                        "inverse-primary": "#a5d0b9",
+                        "error": "#ba1a1a",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#623f18",
+                        "on-primary-fixed": "#002114",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed": "#2c1600",
+                        "tertiary-container": "#56340e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "64px",
+                        "container-max": "1280px",
+                        "gutter": "24px",
+                        "margin-mobile": "20px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["JetBrains Mono"],
+                        "label-md": ["JetBrains Mono"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Montserrat"],
+                        "headline-lg-mobile": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .dot-grid {
+            background-image: radial-gradient(#c1c8c2 1px, transparent 1px);
+            background-size: 8px 8px;
+        }
+        .drone-hud {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            border: 1px solid rgba(212, 163, 115, 0.5); /* Earthy Gold */
+        }
+        .drone-hud::before, .drone-hud::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-color: #D4A373;
+            border-style: solid;
+        }
+        .drone-hud::before {
+            top: -1px; left: -1px; border-width: 2px 0 0 2px;
+        }
+        .drone-hud::after {
+            bottom: -1px; right: -1px; border-width: 0 2px 2px 0;
+        }
+        .drone-hud-tr {
+            position: absolute; top: -1px; right: -1px; width: 20px; height: 20px; border-width: 2px 2px 0 0; border-color: #D4A373; border-style: solid;
+        }
+        .drone-hud-bl {
+            position: absolute; bottom: -1px; left: -1px; width: 20px; height: 20px; border-width: 0 0 2px 2px; border-color: #D4A373; border-style: solid;
+        }
+        .crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+        }
+        .crosshair::before {
+            content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background-color: #D4A373;
+        }
+        .crosshair::after {
+            content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background-color: #D4A373;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md antialiased dot-grid relative">
+<!-- TopAppBar -->
+<header class="hidden md:flex justify-between items-center w-full px-margin-desktop py-4 bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline flat no shadows sticky top-0 z-50">
+<div class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeEWXmLtytcwf0S84F0zmCHH4LItECI8nm9p2PB4fbzatlT7cTKvKy7uZwskf9Z4XZdV-Nf5M1bEOdgXGxnyDpKK_ulQskPtl4YmME9-aowBYfIU7GjpVK5pBbrmy2Syq-LhR7RSzjGTchSW4LQJXQax4GX6fgam9cCq_JjXEr8BMgkBgTyUc7xv8rXxNBUvPANf9OMC4jQWL9_rt6uRehWsvB9Kd8Duq_9jAmsuyQdUR0vD1WNc7sM6YLR22KL2o6tmw" alt="Vivas AI Logo" class="h-8 w-auto"></div>
+<div class="flex items-center gap-6 font-label-md text-label-md">
+<span class="text-secondary dark:text-secondary-fixed-dim font-bold">Slide 03: Field &amp; Drone Intelligence</span>
+<span class="text-on-surface-variant dark:text-on-secondary-fixed-variant">Slide 01/05</span>
+</div>
+</header>
+<main class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-[80px] grid grid-cols-1 md:grid-cols-12 gap-gutter relative z-10">
+<!-- Left Column: Core Vectors -->
+<div class="md:col-span-3 flex flex-col gap-6">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">sensors</span>
+<h2 class="font-headline-md text-headline-md text-primary uppercase tracking-wider">Core Vectors</h2>
+</div>
+<div class="bg-surface p-6 border border-outline-variant rounded flex flex-col gap-4 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-2 text-primary-container font-label-sm text-label-sm opacity-50">SYS.01</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary-container">psychiatry</span>
+<div>
+<div class="font-label-md text-label-md font-bold text-on-surface">Agronomy Data</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Soil pH, Moisture, NPK</div>
+</div>
+</div>
+</div>
+<div class="bg-surface p-6 border border-outline-variant rounded flex flex-col gap-4 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-2 text-primary-container font-label-sm text-label-sm opacity-50">SYS.02</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary-container">cloud</span>
+<div>
+<div class="font-label-md text-label-md font-bold text-on-surface">Micro-Weather</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Hyper-local forecasts</div>
+</div>
+</div>
+</div>
+<div class="bg-surface p-6 border border-outline-variant rounded flex flex-col gap-4 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-2 text-primary-container font-label-sm text-label-sm opacity-50">SYS.03</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary-container">router</span>
+<div>
+<div class="font-label-md text-label-md font-bold text-on-surface">IoT Telemetry</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Real-time sensor mesh</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Center Column: Drone Feed -->
+<div class="md:col-span-6 relative flex flex-col">
+<div class="flex justify-between items-center mb-4">
+<h2 class="font-headline-md text-headline-md text-primary">Aerial Intelligence</h2>
+<div class="flex items-center gap-2 bg-secondary-fixed text-on-secondary-fixed px-3 py-1 rounded font-label-sm text-label-sm border border-secondary-fixed-dim">
+<div class="w-2 h-2 rounded-full bg-error animate-pulse"></div>
+                    STATUS: ONLINE
+                </div>
+</div>
+<div class="relative flex-grow min-h-[400px] border border-outline-variant rounded overflow-hidden bg-surface-container-low shadow-sm">
+<!-- Aerial Image Placeholder -->
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A high-resolution aerial view of a meticulously gridded agricultural field. The scene captures the precision of modern farming with distinct, straight crop rows extending into the distance under clear, bright daylight. The dominant colors are vibrant greens of the crops contrasting against the rich, dark browns of the soil. The lighting is crisp, casting sharp, structural shadows that emphasize the geometric layout of the field. The overall aesthetic is clean, technical, and highly organized, reflecting a precision agriculture environment." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBIy6jRskFjbrdNhYfRY2gOeJyU4bX2-_8cON04RryRWvjN7sLNFYjxXFsEnUE78UmrtHWqCk-CvF6CCb_kA327Fy4rulANE1E2yKGeKGjo1pBt0gDstN3WrplVvQIp9jj52kwJQqr2g9GoRf-Sd-4p8ZkBu749I8rJL2E08ui0Z0JdT4WciVBUM8oTf1ZYLsbiOGfPRi9j7LIP-hEN374qAATW4gzkxlN7jJeUQzDNr7WryJKJcl3ZNA')"></div>
+<!-- Drone HUD Overlay -->
+<div class="drone-hud z-10 pointer-events-none">
+<div class="drone-hud-tr"></div>
+<div class="drone-hud-bl"></div>
+<div class="crosshair"></div>
+<!-- HUD Metrics -->
+<div class="absolute top-4 left-4 font-label-sm text-label-sm text-[#D4A373] bg-black/50 px-2 py-1 rounded">ALT: 120m</div>
+<div class="absolute top-4 right-4 font-label-sm text-label-sm text-[#D4A373] bg-black/50 px-2 py-1 rounded">SPD: 15m/s</div>
+<div class="absolute bottom-4 left-4 font-label-sm text-label-sm text-[#D4A373] bg-black/50 px-2 py-1 rounded">CAM: 4K RGB</div>
+<div class="absolute bottom-4 right-4 font-label-sm text-label-sm text-[#D4A373] bg-black/50 px-2 py-1 rounded">REC ⏺</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Capabilities -->
+<div class="md:col-span-3 flex flex-col gap-6">
+<div class="flex justify-end mb-4">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase">Analysis Modules</span>
+</div>
+<div class="bg-surface p-6 border border-outline-variant rounded shadow-sm hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-tertiary-container">
+<div class="font-label-sm text-label-sm text-outline mb-2">MOD_01</div>
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-secondary">videocam</span>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">4K Video Analytics</h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">High-fidelity crop health monitoring and anomaly detection.</p>
+</div>
+<div class="bg-surface p-6 border border-outline-variant rounded shadow-sm hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-secondary">
+<div class="font-label-sm text-label-sm text-outline mb-2">MOD_02</div>
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-secondary">terrain</span>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">3D Terrain Models</h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Topographical mapping for precise water flow management.</p>
+</div>
+<div class="bg-surface p-6 border border-outline-variant rounded shadow-sm hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-primary-container">
+<div class="font-label-sm text-label-sm text-outline mb-2">MOD_03</div>
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-secondary">category</span>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">Land-Use Classification</h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">AI-driven segmentation of field zones for optimized planting.</p>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-center gap-gutter items-center py-4 bg-surface-container-low/80 backdrop-blur-md border-t border-outline-variant docked full-width bottom-0 flat no shadows">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-fixed-variant px-6 py-2 hover:text-primary dark:hover:text-primary-fixed transition-all" href="#">
+<span class="material-symbols-outlined">arrow_back_ios</span>
+<span class="font-label-md text-label-md">Previous</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-secondary-fixed-variant px-6 py-2 hover:text-primary dark:hover:text-primary-fixed transition-all" href="#">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="font-label-md text-label-md">Overview</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-xl px-6 py-2 hover:text-primary dark:hover:text-primary-fixed transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">arrow_forward_ios</span>
+<span class="font-label-md text-label-md font-bold">Next</span>
+</a>
+<div class="absolute bottom-1 w-full text-center font-label-sm text-[10px] text-on-surface-variant opacity-70">(C) SAN R&amp;D Business Solutions</div></nav>
+
+
+</body></html>

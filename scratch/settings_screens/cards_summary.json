@@ -1,0 +1,254 @@
+{
+  "farm_profile": {
+    "url": "https://my.tend.com/settings",
+    "title": "Settings | Tend",
+    "headings": [
+      "Settings",
+      "Cookie consent"
+    ],
+    "tabs": [],
+    "buttons": [
+      "Close And Don't Show Again",
+      "Feedback",
+      "Manage Cookies",
+      "Accept All",
+      "Reject All"
+    ],
+    "formLabels": [],
+    "inputs": [],
+    "tableHeaders": [],
+    "bodyTextSnippet": "BETA\nGF\nGopikrishna's Farm\nOwner\nImport / Export Hub\nDashboards\nTasks\nNotes\nFarm Map\nGrow\nCrop Library\nCrop Plan\nHarvest Planner\nSell\nBuy\nContacts\nAssets\nLabor\nReports & Analytics\nFinancials\nLogs\nFile Library\nNotification Center\nSettings\nAccount\nGuided Onboarding\nHelp Docs\nSettings\nGS\nGopikrishna Santhanam\nClose And Don't Show Again\n\nFarm Profile & Settings\n\nCustomize your preferences and options to tailor your experience to your liking.\n\nTask Type Management\n\nStreamline your workflow, organize and categorize your tasks.\n\nUsers & Roles\n\nManage all the users and assign them specific roles and permissions.\n\nProduct Settings\n\nConfigure product defaults, shelf life management, and inventory settings.\n\nOnline Store/Offer Sheet Settings\n\nSetting up payment options to managing shipping and taxes.\n\nNotification Settings\n\nUpdate your notification settings now to ensure you never miss a beat.\n\nPlanting ID Configuration\n\nIdentify and configure your new plants with ease using Planting ID Configuration.\n\nLabel Management\n\nCreate and manage label templates, and prepare labels for print.\n\nCommerce & Payment Processors\n\nManage payment gateways and optimize your business operations.\n\nTime & Attendance\n\nTrack employee hours, manage schedules, and monitor attendance records.\n\nCustom Data Fields\n\nCreate and manage custom fields to track additional data across your farm operations.\n\nApps (Integrations)\n\nConnect third-party apps and services to your farm.\n\nFeedback\nCookie consent\n\nWe use cookies t",
+    "screenshot": "scratch/settings_screens/cards/farm_profile.png"
+  },
+  "task_type": {
+    "url": "https://my.tend.com/settings",
+    "title": "Settings | Tend",
+    "headings": [
+      "Settings",
+      "Cookie consent"
+    ],
+    "tabs": [],
+    "buttons": [
+      "Close And Don't Show Again",
+      "Feedback",
+      "Manage Cookies",
+      "Accept All",
+      "Reject All"
+    ],
+    "formLabels": [],
+    "inputs": [],
+    "tableHeaders": [],
+    "bodyTextSnippet": "BETA\nGF\nGopikrishna's Farm\nOwner\nImport / Export Hub\nDashboards\nTasks\nNotes\nFarm Map\nGrow\nCrop Library\nCrop Plan\nHarvest Planner\nSell\nBuy\nContacts\nAssets\nLabor\nReports & Analytics\nFinancials\nLogs\nFile Library\nNotification Center\nSettings\nAccount\nGuided Onboarding\nHelp Docs\nSettings\nGS\nGopikrishna Santhanam\nClose And Don't Show Again\n\nFarm Profile & Settings\n\nCustomize your preferences and options to tailor your experience to your liking.\n\nTask Type Management\n\nStreamline your workflow, organize and categorize your tasks.\n\nUsers & Roles\n\nManage all the users and assign them specific roles and permissions.\n\nProduct Settings\n\nConfigure product defaults, shelf life management, and inventory settings.\n\nOnline Store/Offer Sheet Settings\n\nSetting up payment options to managing shipping and taxes.\n\nNotification Settings\n\nUpdate your notification settings now to ensure you never miss a beat.\n\nPlanting ID Configuration\n\nIdentify and configure your new plants with ease using Planting ID Configuration.\n\nLabel Management\n\nCreate and manage label templates, and prepare labels for print.\n\nCommerce & Payment Processors\n\nManage payment gateways and optimize your business operations.\n\nTime & Attendance\n\nTrack employee hours, manage schedules, and monitor attendance records.\n\nCustom Data Fields\n\nCreate and manage custom fields to track additional data across your farm operations.\n\nApps (Integrations)\n\nConnect third-party apps and services to your farm.\n\nFeedback\nCookie consent\n\nWe use cookies t",
+    "screenshot": "scratch/settings_screens/cards/task_type.png"
+  },
+  "users_roles": {
+    "url": "https://my.tend.com/settings",
+    "title": "Settings | Tend",
+    "headings": [
+      "Settings",
+      "Cookie consent"
+    ],
+    "tabs": [],
+    "buttons": [
+      "Close And Don't Show Again",
+      "Feedback",
+      "Manage Cookies",
+      "Accept All",
+      "Reject All"
+    ],
+    "formLabels": [],
+    "inputs": [],
+    "tableHeaders": [],
+    "bodyTextSnippet": "BETA\nGF\nGopikrishna's Farm\nOwner\nImport / Export Hub\nDashboards\nTasks\nNotes\nFarm Map\nGrow\nCrop Library\nCrop Plan\nHarvest Planner\nSell\nBuy\nContacts\nAssets\nLabor\nReports & Analytics\nFinancials\nLogs\nFile Library\nNotification Center\nSettings\nAccount\nGuided Onboarding\nHelp Docs\nSettings\nGS\nGopikrishna Santhanam\nClose And Don't Show Again\n\nFarm Profile & Settings\n\nCustomize your preferences and options to tailor your experience to your liking.\n\nTask Type Management\n\nStreamline your workflow, organize and categorize your tasks.\n\nUsers & Roles\n\nManage all the users and assign them specific roles and permissions.\n\nProduct Settings\n\nConfigure product defaults, shelf life management, and inventory settings.\n\nOnline Store/Offer Sheet Settings\n\nSetting up payment options to managing shipping and taxes.\n\nNotification Settings\n\nUpdate your notification settings now to ensure you never miss a beat.\n\nPlanting ID Configuration\n\nIdentify and configure your new plants with ease using Planting ID Configuration.\n\nLabel Management\n\nCreate and manage label templates, and prepare labels for print.\n\nCommerce & Payment Processors\n\nManage payment gateways and optimize your business operations.\n\nTime & Attendance\n\nTrack employee hours, manage schedules, and monitor attendance records.\n\nCustom Data Fields\n\nCreate and manage custom fields to track additional data across your farm operations.\n\nApps (Integrations)\n\nConnect third-party apps and services to your farm.\n\nFeedback\nCookie consent\n\nWe use cookies t",
+    "screenshot": "scratch/settings_screens/cards/users_roles.png"
+  },
+  "product_settings": {
+    "url": "https://my.tend.com/settings",
+    "title": "Settings | Tend",
+    "headings": [
+      "Settings",
+      "Cookie consent"
+    ],
+    "tabs": [],
+    "buttons": [
+      "Close And Don't Show Again",
+      "Feedback",
+      "Manage Cookies",
+      "Accept All",
+      "Reject All"
+    ],
+    "formLabels": [],
+    "inputs": [],
+    "tableHeaders": [],
+    "bodyTextSnippet": "BETA\nGF\nGopikrishna's Farm\nOwner\nImport / Export Hub\nDashboards\nTasks\nNotes\nFarm Map\nGrow\nCrop Library\nCrop Plan\nHarvest Planner\nSell\nBuy\nContacts\nAssets\nLabor\nReports & Analytics\nFinancials\nLogs\nFile Library\nNotification Center\nSettings\nAccount\nGuided Onboarding\nHelp Docs\nSettings\nGS\nGopikrishna Santhanam\nClose And Don't Show Again\n\nFarm Profile & Settings\n\nCustomize your preferences and options to tailor your experience to your liking.\n\nTask Type Management\n\nStreamline your workflow, organize and categorize your tasks.\n\nUsers & Roles\n\nManage all the users and assign them specific roles and permissions.\n\nProduct Settings\n\nConfigure product defaults, shelf life management, and inventory settings.\n\nOnline Store/Offer Sheet Settings\n\nSetting up payment options to managing shipping and taxes.\n\nNotification Settings\n\nUpdate your notification settings now to ensure you never miss a beat.\n\nPlanting ID Configuration\n\nIdentify and configure your new plants with ease using Planting ID Configuration.\n\nLabel Management\n\nCreate and manage label templates, and prepare labels for print.\n\nCommerce & Payment Processors\n\nManage payment gateways and optimize your business operations.\n\nTime & Attendance\n\nTrack employee hours, manage schedules, and monitor attendance records.\n\nCustom Data Fields\n\nCreate and manage custom fields to track additional data across your farm operations.\n\nApps (Integrations)\n\nConnect third-party apps and services to your farm.\n\nFeedback\nCookie consent\n\nWe use cookies t",
+    "screenshot": "scratch/settings_screens/cards/product_settings.png"
+  },
+  "online_store": {
+    "url": "https://my.tend.com/settings",
+    "title": "Settings | Tend",
+    "headings": [
+      "Settings",
+      "Cookie consent"
+    ],
+    "tabs": [],
+    "buttons": [
+      "Close And Don't Show Again",
+      "Feedback",
+      "Manage Cookies",
+      "Accept All",
+      "Reject All"
+    ],
+    "formLabels": [],
+    "inputs": [],
+    "tableHeaders": [],
+    "bodyTextSnippet": "BETA\nGF\nGopikrishna's Farm\nOwner\nImport / Export Hub\nDashboards\nTasks\nNotes\nFarm Map\nGrow\nCrop Library\nCrop Plan\nHarvest Planner\nSell\nBuy\nContacts\nAssets\nLabor\nReports & Analytics\nFinancials\nLogs\nFile Library\nNotification Center\nSettings\nAccount\nGuided Onboarding\nHelp Docs\nSettings\nGS\nGopikrishna Santhanam\nClose And Don't Show Again\n\nFarm Profile & Settings\n\nCustomize your preferences and options to tailor your experience to your liking.\n\nTask Type Management\n\nStreamline your workflow, organize and categorize your tasks.\n\nUsers & Roles\n\nManage all the users and assign them specific roles and permissions.\n\nProduct Settings\n\nConfigure product defaults, shelf life management, and inventory settings.\n\nOnline Store/Offer Sheet Settings\n\nSetting up payment options to managing shipping and taxes.\n\nNotification Settings\n\nUpdate your notification settings now to ensure you never miss a beat.\n\nPlanting ID Configuration\n\nIdentify and configure your new plants with ease using Planting ID Configuration.\n\nLabel Management\n\nCreate and manage label templates, and prepare labels for print.\n\nCommerce & Payment Processors\n\nManage payment gateways and optimize your business operations.\n\nTime & Attendance\n\nTrack employee hours, manage schedules, and monitor attendance records.\n\nCustom Data Fields\n\nCreate and manage custom fields to track additional data across your farm operations.\n\nApps (Integrations)\n\nConnect third-party apps and services to your farm.\n\nFeedback\nCookie consent\n\nWe use cookies t",
+    "screenshot": "scratch/settings_screens/cards/online_store.png"
+  },
+  "notification_settings": {
+    "url": "https://my.tend.com/settings",
+    "title": "Settings | Tend",
+    "headings": [
+      "Settings",
+      "Cookie consent"
+    ],
+    "tabs": [],
+    "buttons": [
+      "Close And Don't Show Again",
+      "Feedback",
+      "Manage Cookies",
+      "Accept All",
+      "Reject All"
+    ],
+    "formLabels": [],
+    "inputs": [],
+    "tableHeaders": [],
+    "bodyTextSnippet": "BETA\nGF\nGopikrishna's Farm\nOwner\nImport / Export Hub\nDashboards\nTasks\nNotes\nFarm Map\nGrow\nCrop Library\nCrop Plan\nHarvest Planner\nSell\nBuy\nContacts\nAssets\nLabor\nReports & Analytics\nFinancials\nLogs\nFile Library\nNotification Center\nSettings\nAccount\nGuided Onboarding\nHelp Docs\nSettings\nGS\nGopikrishna Santhanam\nClose And Don't Show Again\n\nFarm Profile & Settings\n\nCustomize your preferences and options to tailor your experience to your liking.\n\nTask Type Management\n\nStreamline your workflow, organize and categorize your tasks.\n\nUsers & Roles\n\nManage all the users and assign them specific roles and permissions.\n\nProduct Settings\n\nConfigure product defaults, shelf life management, and inventory settings.\n\nOnline Store/Offer Sheet Settings\n\nSetting up payment options to managing shipping and taxes.\n\nNotification Settings\n\nUpdate your notification settings now to ensure you never miss a beat.\n\nPlanting ID Configuration\n\nIdentify and configure your new plants with ease using Planting ID Configuration.\n\nLabel Management\n\nCreate and manage label templates, and prepare labels for print.\n\nCommerce & Payment Processors\n\nManage payment gateways and optimize your business operations.\n\nTime & Attendance\n\nTrack employee hours, manage schedules, and monitor attendance records.\n\nCustom Data Fields\n\nCreate and manage custom fields to track additional data across your farm operations.\n\nApps (Integrations)\n\nConnect third-party apps and services to your farm.\n\nFeedback\nCookie consent\n\nWe use cookies t",
+    "screenshot": "scratch/settings_screens/cards/notification_settings.png"
+  },
+  "planting_id": {
+    "url": "https://my.tend.com/settings",
+    "title": "Settings | Tend",
+    "headings": [
+      "Settings",
+      "Cookie consent"
+    ],
+    "tabs": [],
+    "buttons": [
+      "Close And Don't Show Again",
+      "Feedback",
+      "Manage Cookies",
+      "Accept All",
+      "Reject All"
+    ],
+    "formLabels": [],
+    "inputs": [],
+    "tableHeaders": [],
+    "bodyTextSnippet": "BETA\nGF\nGopikrishna's Farm\nOwner\nImport / Export Hub\nDashboards\nTasks\nNotes\nFarm Map\nGrow\nCrop Library\nCrop Plan\nHarvest Planner\nSell\nBuy\nContacts\nAssets\nLabor\nReports & Analytics\nFinancials\nLogs\nFile Library\nNotification Center\nSettings\nAccount\nGuided Onboarding\nHelp Docs\nSettings\nGS\nGopikrishna Santhanam\nClose And Don't Show Again\n\nFarm Profile & Settings\n\nCustomize your preferences and options to tailor your experience to your liking.\n\nTask Type Management\n\nStreamline your workflow, organize and categorize your tasks.\n\nUsers & Roles\n\nManage all the users and assign them specific roles and permissions.\n\nProduct Settings\n\nConfigure product defaults, shelf life management, and inventory settings.\n\nOnline Store/Offer Sheet Settings\n\nSetting up payment options to managing shipping and taxes.\n\nNotification Settings\n\nUpdate your notification settings now to ensure you never miss a beat.\n\nPlanting ID Configuration\n\nIdentify and configure your new plants with ease using Planting ID Configuration.\n\nLabel Management\n\nCreate and manage label templates, and prepare labels for print.\n\nCommerce & Payment Processors\n\nManage payment gateways and optimize your business operations.\n\nTime & Attendance\n\nTrack employee hours, manage schedules, and monitor attendance records.\n\nCustom Data Fields\n\nCreate and manage custom fields to track additional data across your farm operations.\n\nApps (Integrations)\n\nConnect third-party apps and services to your farm.\n\nFeedback\nCookie consent\n\nWe use cookies t",
+    "screenshot": "scratch/settings_screens/cards/planting_id.png"
+  },
+  "label_management": {
+    "url": "https://my.tend.com/settings",
+    "title": "Settings | Tend",
+    "headings": [
+      "Settings",
+      "Cookie consent"
+    ],
+    "tabs": [],
+    "buttons": [
+      "Close And Don't Show Again",
+      "Feedback",
+      "Manage Cookies",
+      "Accept All",
+      "Reject All"
+    ],
+    "formLabels": [],
+    "inputs": [],
+    "tableHeaders": [],
+    "bodyTextSnippet": "BETA\nGF\nGopikrishna's Farm\nOwner\nImport / Export Hub\nDashboards\nTasks\nNotes\nFarm Map\nGrow\nCrop Library\nCrop Plan\nHarvest Planner\nSell\nBuy\nContacts\nAssets\nLabor\nReports & Analytics\nFinancials\nLogs\nFile Library\nNotification Center\nSettings\nAccount\nGuided Onboarding\nHelp Docs\nSettings\nGS\nGopikrishna Santhanam\nClose And Don't Show Again\n\nFarm Profile & Settings\n\nCustomize your preferences and options to tailor your experience to your liking.\n\nTask Type Management\n\nStreamline your workflow, organize and categorize your tasks.\n\nUsers & Roles\n\nManage all the users and assign them specific roles and permissions.\n\nProduct Settings\n\nConfigure product defaults, shelf life management, and inventory settings.\n\nOnline Store/Offer Sheet Settings\n\nSetting up payment options to managing shipping and taxes.\n\nNotification Settings\n\nUpdate your notification settings now to ensure you never miss a beat.\n\nPlanting ID Configuration\n\nIdentify and configure your new plants with ease using Planting ID Configuration.\n\nLabel Management\n\nCreate and manage label templates, and prepare labels for print.\n\nCommerce & Payment Processors\n\nManage payment gateways and optimize your business operations.\n\nTime & Attendance\n\nTrack employee hours, manage schedules, and monitor attendance records.\n\nCustom Data Fields\n\nCreate and manage custom fields to track additional data across your farm operations.\n\nApps (Integrations)\n\nConnect third-party apps and services to your farm.\n\nFeedback\nCookie consent\n\nWe use cookies t",
+    "screenshot": "scratch/settings_screens/cards/label_management.png"
+  },
+  "commerce_payment": {
+    "url": "https://my.tend.com/settings",
+    "title": "Settings | Tend",
+    "headings": [
+      "Settings",
+      "Cookie consent"
+    ],
+    "tabs": [],
+    "buttons": [
+      "Close And Don't Show Again",
+      "Feedback",
+      "Manage Cookies",
+      "Accept All",
+      "Reject All"
+    ],
+    "formLabels": [],
+    "inputs": [],
+    "tableHeaders": [],
+    "bodyTextSnippet": "BETA\nGF\nGopikrishna's Farm\nOwner\nImport / Export Hub\nDashboards\nTasks\nNotes\nFarm Map\nGrow\nCrop Library\nCrop Plan\nHarvest Planner\nSell\nBuy\nContacts\nAssets\nLabor\nReports & Analytics\nFinancials\nLogs\nFile Library\nNotification Center\nSettings\nAccount\nGuided Onboarding\nHelp Docs\nSettings\nGS\nGopikrishna Santhanam\nClose And Don't Show Again\n\nFarm Profile & Settings\n\nCustomize your preferences and options to tailor your experience to your liking.\n\nTask Type Management\n\nStreamline your workflow, organize and categorize your tasks.\n\nUsers & Roles\n\nManage all the users and assign them specific roles and permissions.\n\nProduct Settings\n\nConfigure product defaults, shelf life management, and inventory settings.\n\nOnline Store/Offer Sheet Settings\n\nSetting up payment options to managing shipping and taxes.\n\nNotification Settings\n\nUpdate your notification settings now to ensure you never miss a beat.\n\nPlanting ID Configuration\n\nIdentify and configure your new plants with ease using Planting ID Configuration.\n\nLabel Management\n\nCreate and manage label templates, and prepare labels for print.\n\nCommerce & Payment Processors\n\nManage payment gateways and optimize your business operations.\n\nTime & Attendance\n\nTrack employee hours, manage schedules, and monitor attendance records.\n\nCustom Data Fields\n\nCreate and manage custom fields to track additional data across your farm operations.\n\nApps (Integrations)\n\nConnect third-party apps and services to your farm.\n\nFeedback\nCookie consent\n\nWe use cookies t",
+    "screenshot": "scratch/settings_screens/cards/commerce_payment.png"
+  },
+  "time_attendance": {
+    "url": "https://my.tend.com/settings",
+    "title": "Settings | Tend",
+    "headings": [
+      "Settings",
+      "Cookie consent"
+    ],
+    "tabs": [],
+    "buttons": [
+      "Close And Don't Show Again",
+      "Feedback",
+      "Manage Cookies",
+      "Accept All",
+      "Reject All"
+    ],
+    "formLabels": [],
+    "inputs": [],
+    "tableHeaders": [],
+    "bodyTextSnippet": "BETA\nGF\nGopikrishna's Farm\nOwner\nImport / Export Hub\nDashboards\nTasks\nNotes\nFarm Map\nGrow\nCrop Library\nCrop Plan\nHarvest Planner\nSell\nBuy\nContacts\nAssets\nLabor\nReports & Analytics\nFinancials\nLogs\nFile Library\nNotification Center\nSettings\nAccount\nGuided Onboarding\nHelp Docs\nSettings\nGS\nGopikrishna Santhanam\nClose And Don't Show Again\n\nFarm Profile & Settings\n\nCustomize your preferences and options to tailor your experience to your liking.\n\nTask Type Management\n\nStreamline your workflow, organize and categorize your tasks.\n\nUsers & Roles\n\nManage all the users and assign them specific roles and permissions.\n\nProduct Settings\n\nConfigure product defaults, shelf life management, and inventory settings.\n\nOnline Store/Offer Sheet Settings\n\nSetting up payment options to managing shipping and taxes.\n\nNotification Settings\n\nUpdate your notification settings now to ensure you never miss a beat.\n\nPlanting ID Configuration\n\nIdentify and configure your new plants with ease using Planting ID Configuration.\n\nLabel Management\n\nCreate and manage label templates, and prepare labels for print.\n\nCommerce & Payment Processors\n\nManage payment gateways and optimize your business operations.\n\nTime & Attendance\n\nTrack employee hours, manage schedules, and monitor attendance records.\n\nCustom Data Fields\n\nCreate and manage custom fields to track additional data across your farm operations.\n\nApps (Integrations)\n\nConnect third-party apps and services to your farm.\n\nFeedback\nCookie consent\n\nWe use cookies t",
+    "screenshot": "scratch/settings_screens/cards/time_attendance.png"
+  },
+  "custom_data_fields": {
+    "url": "https://my.tend.com/settings",
+    "title": "Settings | Tend",
+    "headings": [
+      "Settings",
+      "Cookie consent"
+    ],
+    "tabs": [],
+    "buttons": [
+      "Close And Don't Show Again",
+      "Feedback",
+      "Manage Cookies",
+      "Accept All",
+      "Reject All"
+    ],
+    "formLabels": [],
+    "inputs": [],
+    "tableHeaders": [],
+    "bodyTextSnippet": "BETA\nGF\nGopikrishna's Farm\nOwner\nImport / Export Hub\nDashboards\nTasks\nNotes\nFarm Map\nGrow\nCrop Library\nCrop Plan\nHarvest Planner\nSell\nBuy\nContacts\nAssets\nLabor\nReports & Analytics\nFinancials\nLogs\nFile Library\nNotification Center\nSettings\nAccount\nGuided Onboarding\nHelp Docs\nSettings\nGS\nGopikrishna Santhanam\nClose And Don't Show Again\n\nFarm Profile & Settings\n\nCustomize your preferences and options to tailor your experience to your liking.\n\nTask Type Management\n\nStreamline your workflow, organize and categorize your tasks.\n\nUsers & Roles\n\nManage all the users and assign them specific roles and permissions.\n\nProduct Settings\n\nConfigure product defaults, shelf life management, and inventory settings.\n\nOnline Store/Offer Sheet Settings\n\nSetting up payment options to managing shipping and taxes.\n\nNotification Settings\n\nUpdate your notification settings now to ensure you never miss a beat.\n\nPlanting ID Configuration\n\nIdentify and configure your new plants with ease using Planting ID Configuration.\n\nLabel Management\n\nCreate and manage label templates, and prepare labels for print.\n\nCommerce & Payment Processors\n\nManage payment gateways and optimize your business operations.\n\nTime & Attendance\n\nTrack employee hours, manage schedules, and monitor attendance records.\n\nCustom Data Fields\n\nCreate and manage custom fields to track additional data across your farm operations.\n\nApps (Integrations)\n\nConnect third-party apps and services to your farm.\n\nFeedback\nCookie consent\n\nWe use cookies t",
+    "screenshot": "scratch/settings_screens/cards/custom_data_fields.png"
+  },
+  "apps_integrations": {
+    "url": "https://my.tend.com/settings",
+    "title": "Settings | Tend",
+    "headings": [
+      "Settings",
+      "Cookie consent"
+    ],
+    "tabs": [],
+    "buttons": [
+      "Close And Don't Show Again",
+      "Feedback",
+      "Manage Cookies",
+      "Accept All",
+      "Reject All"
+    ],
+    "formLabels": [],
+    "inputs": [],
+    "tableHeaders": [],
+    "bodyTextSnippet": "BETA\nGF\nGopikrishna's Farm\nOwner\nImport / Export Hub\nDashboards\nTasks\nNotes\nFarm Map\nGrow\nCrop Library\nCrop Plan\nHarvest Planner\nSell\nBuy\nContacts\nAssets\nLabor\nReports & Analytics\nFinancials\nLogs\nFile Library\nNotification Center\nSettings\nAccount\nGuided Onboarding\nHelp Docs\nSettings\nGS\nGopikrishna Santhanam\nClose And Don't Show Again\n\nFarm Profile & Settings\n\nCustomize your preferences and options to tailor your experience to your liking.\n\nTask Type Management\n\nStreamline your workflow, organize and categorize your tasks.\n\nUsers & Roles\n\nManage all the users and assign them specific roles and permissions.\n\nProduct Settings\n\nConfigure product defaults, shelf life management, and inventory settings.\n\nOnline Store/Offer Sheet Settings\n\nSetting up payment options to managing shipping and taxes.\n\nNotification Settings\n\nUpdate your notification settings now to ensure you never miss a beat.\n\nPlanting ID Configuration\n\nIdentify and configure your new plants with ease using Planting ID Configuration.\n\nLabel Management\n\nCreate and manage label templates, and prepare labels for print.\n\nCommerce & Payment Processors\n\nManage payment gateways and optimize your business operations.\n\nTime & Attendance\n\nTrack employee hours, manage schedules, and monitor attendance records.\n\nCustom Data Fields\n\nCreate and manage custom fields to track additional data across your farm operations.\n\nApps (Integrations)\n\nConnect third-party apps and services to your farm.\n\nFeedback\nCookie consent\n\nWe use cookies t",
+    "screenshot": "scratch/settings_screens/cards/apps_integrations.png"
+  }
+}

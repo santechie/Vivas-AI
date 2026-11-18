@@ -1,0 +1,418 @@
+# Vivas AI — Agri Input Partner Hub: Antigravity Prompt & SRS
+
+Nov 15, 2026 · @GK
+
+## Summary
+
+Build a new module called **Vivas AgriInput Partner Hub**. Its sidebar label is **Input Partner Hub**, and it sits as a new dropdown directly below **Buy & Procurement** and above **Assets**. It lets seed, fertiliser, urea, nano-fertiliser, bio-stimulant and crop-protection manufacturers host stores, sell to farmers, and see AI-scored field performance of their products, drawn from live Vivas AI field data.
+
+Why that menu position: the Hub feeds purchases into Buy & Procurement and stock into Assets › Materials & Inputs. It also takes its field evidence from Grow › Crop Health, which sits just above in the same sidebar.
+
+Ground rules for Antigravity, applied throughout this doc:
+
+- **Reuse first.** Never recreate a page, table, field or API that already exists. New tables use the `pih_` prefix and point to existing tables by foreign key.
+- **Zero change now.** The current app is not touched in phase 1. The few edits it will eventually need are listed separately in *Changes needed in the existing application*, and each needs your approval.
+- **Same look.** Follow the existing Vivas AI UI: `index.css` tokens, sidebar `nav-item` / `submenu-item` pattern, lucide-react icons, and the Agro-Intelligence `DESIGN.md`.
+
+## Existing application analysis
+
+The Hub can be built entirely on top of what already exists. I read the `VivasAI` folder (backend `server.js`, `routes/`, `database/*.sql`, `frontend/src`, `DESIGN.md`) on 15 Nov 2026.
+
+**Stack.** React 19 + Vite frontend with lucide-react and Leaflet. Node/Express backend with PostgreSQL (`pg`). Deployed by `deploy.sh` to a Hetzner server behind Nginx + PM2. Navigation is a single `App.jsx` that switches on `currentScreen` (no router). Larger modules are mounted as routers: `/api/ch` (Crop Health), `/api/account`, `/api/settings`.
+
+**What the Hub reuses — do not recreate:**
+
+| Existing asset | Table / API | How the Hub uses it |
+| --- | --- | --- |
+| Farms & users | `vivas_farms`, `vivas_users`, `vivas_user_farms`, `/api/auth/*`, `/api/farms` | Farm context, buyer identity, login |
+| Crops & varieties | `vivas_crops`, `vivas_crop_varieties`, `/api/crops` | Crop suitability of each product |
+| Plantings | `vivas_plantings`, `/api/plantings` | Where a product was used |
+| Crop Health library | `ch_problem`, `ch_symptom`, `ch_nutrient`, `ch_control_measure` | Problems a product claims to solve |
+| Crop Health cases | `ch_case`, `ch_case_diagnosis`, `ch_case_treatment`, `ch_case_followup`, `/api/ch/cases/*` | Live field issues and treatment outcomes: the core evidence source |
+| Crop Health AI log | `ch_ai_request`, `ch_ai_feedback`, `ch_risk_rule`, `ch_alert` | Same logging and alert pattern for Hub AI |
+| Soil tests & labs | `vivas_soil_tests`, `vivas_labs` | Nutrient-deficiency context for fertiliser recommendations |
+| Yields | `vivas_crop_yields`, `vivas_harvest_plans` | Yield impact of a product |
+| Inputs | `vivas_inputs_catalog`, `vivas_inputs_inventory`, `vivas_inputs_lots`, `/api/inputs/*` | Stock after a store purchase is received |
+| Buy & Procurement | `vivas_shopping_list`, `vivas_purchase_orders`, `vivas_purchase_order_items`, `/api/buy/*` | Farmer purchase records for store orders |
+| Vendors | `vivas_vendors`, `/api/contacts/vendors` | A partner becomes a vendor for the farm on first order |
+| Tasks | `vivas_farm_tasks`, `/api/tasks` | Application tasks for a recommended product |
+| Settings | `vivas_settings_roles`, `vivas_settings_notifications`, `vivas_settings_payment_processors`, `vivas_settings_webhooks`, `vivas_settings_api_tokens` | Roles, alerts, payments, webhook pattern |
+| AI credits | `vivas_ai_credits` | Meter AI calls per farm |
+
+**Gaps found that shape the design:**
+
+- No manufacturer / partner entity exists. `vivas_vendors` is per-farm supplier data, so partners need their own tables.
+- `vivas_inputs_catalog` has no owner or farm link, so partner products live in a new `pih_products` table and are copied into the farm catalog only when bought.
+- `vivas_plantings` is thin (text crop and field names, no `farm_id`). The Hub therefore takes field evidence from `ch_case` and `ch_case_treatment`, which do carry `farm_id`, `crop_id`, `planting_id`, GPS and weather.
+- Crop Health diagnosis today is rule-based symptom matching, not an LLM. The Hub AI engine is new, but logs to `ch_ai_request` in the same way.
+- Sessions are an in-memory `activeSessions` map, so they reset on restart. A partner portal and an external API need persistent tokens (listed under existing-app changes).
+- `vivas_settings_webhooks` and `vivas_settings_api_tokens` are scoped to `farm_id`, so partner keys and webhooks need partner-scoped tables.
+
+**UI style to follow.** Use the `index.css` tokens: `--brand-green #1a8f15`, `--brand-blue #0b2240`, `--brand-orange #e59e09`, `--bg-color #f3f6f3`, 250 px sidebar, Inter font, card shadows `--shadow-sm/md`. Use the Agro-Intelligence `DESIGN.md` for dashboard and AI screens (primary `#1b4332`, Montserrat headings, JetBrains Mono labels, 8 px spacing grid). Copy the page structure of `buy/BuyDashboard.jsx` and `grow/CropHealth.jsx`: stat cards on top, filter bar, table/card toggle, side drawer for detail, modal for add/edit.
+
+## Master prompt for Antigravity
+
+Paste this into an Antigravity agent chat in *Planning* mode, with the `VivasAI` folder open and this SRS saved as `docs/PIH_SRS.md`. Then use the phase prompts in the last section one at a time.
+
+```text
+ROLE
+You are a senior full-stack engineer on the Vivas AI farm platform (React 19 + Vite frontend, Node/Express + PostgreSQL backend). Build a new module: "Vivas AgriInput Partner Hub" (sidebar label "Input Partner Hub"). The full requirements are in docs/PIH_SRS.md — read it completely before planning.
+
+GOAL
+Let agri-input manufacturers (seed, fertiliser, urea, nano-fertiliser, bio-stimulant, micronutrient, crop-protection) join Vivas AI. They host a store and a product catalogue, see AI-analysed field performance of their products from live Vivas AI field data, and sell to farmers. Farmers get AI recommendations for field problems detected in Crop Health and can buy the recommended product inside the platform.
+
+HARD RULES
+1. Analyse first. Before writing code, list every existing table, API route and React screen you will reuse (see SRS §Existing application analysis). Output that list and the plan in an Implementation Plan artifact and wait for my approval.
+2. Do NOT recreate anything that exists. Reuse vivas_farms, vivas_users, vivas_user_farms, vivas_crops, vivas_crop_varieties, vivas_plantings, ch_problem, ch_case, ch_case_treatment, ch_case_followup, ch_ai_request, vivas_soil_tests, vivas_crop_yields, vivas_inputs_catalog/inventory/lots, vivas_purchase_orders(+items), vivas_vendors, vivas_farm_tasks, vivas_ai_credits by foreign key or API call.
+3. Do NOT modify existing tables, routes, components or CSS in this build. All new tables use prefix pih_. All new routes go in backend/routes/partnerHub.js (internal, /api/pih) and backend/routes/partnerApiV1.js (external, /api/pih/v1). All new React code goes in frontend/src/partnerhub/. The only touch-points to existing files are listed in SRS §Changes needed in existing application; present them to me as a separate diff and apply only after I approve.
+4. Migrations: create database/partner_hub_migration.sql. Use UUID PKs (gen_random_uuid()), created_at/updated_at TIMESTAMPTZ, deleted_at for soft delete, CHECK constraints for enums, indexes on every FK and on (farm_id), (partner_id), (product_id). Must be idempotent (IF NOT EXISTS) and include a matching rollback file.
+5. UI: follow existing Vivas AI style exactly. Use frontend/src/index.css variables (--brand-green, --brand-blue, --brand-orange, --card-bg, --shadow-sm/md, Inter), the sidebar nav-item/submenu-item pattern, lucide-react icons, and the Agro-Intelligence DESIGN.md tokens for dashboards and AI screens. Copy the layout of buy/BuyDashboard.jsx and grow/CropHealth.jsx: stat cards, filter bar, table/card toggle, detail drawer, add/edit modal. Put styles in partnerhub/PartnerHub.css, scoped under .pih-root. Responsive down to 360 px.
+6. Security: role-based access (farmer, farm_manager, partner_admin, partner_user, vivas_sme, vivas_admin). Partners must never see farmer names, phone numbers or exact GPS. Expose only anonymised, aggregated field data (district level, minimum 5 farms per aggregate), and only from farms that gave consent in pih_data_sharing_consents. Use parameterised SQL only. Validate every request body (zod or express-validator). Rate-limit external APIs. Write every create/update/delete to pih_audit_log.
+7. AI: implement services/pihAiEngine.js. Log every call to ch_ai_request (request_type prefixed 'pih_'). Debit vivas_ai_credits for farm-side calls. Every inference must store its evidence (case ids, sample size, confidence, model name and version) and must be explainable on screen. Product ratings use the Bayesian Field Performance Score in the SRS, recomputed nightly and on every new verified outcome.
+8. Integrations: REST + JSON, OpenAPI 3.1 spec at /api/pih/v1/docs, API keys hashed (sha256) per partner, HMAC-SHA256 signed webhooks with retry and back-off, Idempotency-Key header on all POSTs, cursor pagination, ISO-8601 UTC dates.
+9. Store checkout: a store order must create a vivas_purchase_orders record (+ items) through the existing Buy logic. It must create or link the partner as a vivas_vendors row for that farm. On receipt it must add a vivas_inputs_lots entry via the existing /api/inputs/lots flow. No parallel inventory.
+10. Compliance (India): capture and validate FCO registration (fertilisers, incl. nano fertilisers), CIB&RC registration (pesticides), Seed Act / variety notification details, GSTIN, HSN code, batch number, manufacture and expiry dates. Block listing of a product without a valid, unexpired licence document approved by a Vivas SME.
+
+DELIVERABLES PER PHASE
+Implementation plan → migration SQL → backend routes + services + tests → React pages → seed data (5 partners, 40 products, 200 synthetic outcomes) → walkthrough artifact with screenshots. Run the app in the Antigravity browser and verify each page before marking a phase done.
+
+START
+Read docs/PIH_SRS.md and the files it references. Produce the Implementation Plan for Phase 1 only (data model + partner onboarding + catalogue + store). Stop and wait for my approval.
+```
+
+## SRS: scope and functional requirements
+
+The Hub closes one loop. A field problem is detected, AI recommends a product, the farmer buys and applies it, the outcome is recorded, and the product's rating and the manufacturer's insights update. Every requirement below serves that loop.
+
+### 1. Purpose and scope
+
+In scope: partner onboarding and verification, partner stores and product catalogues, SME validation of product claims, field-evidence capture, the AI inference engine, automatic product rating, AI recommendations to farmers, in-platform purchase, a partner analytics portal, a partner API and webhooks, and consent-based data sharing.
+
+Out of scope for v1: logistics and courier booking, partner payouts through a payment gateway (recorded as settlements only), credit or financing for farmers, and a mobile app (pages must be responsive).
+
+### 2. User roles
+
+| Role | Who | Main permissions |
+| --- | --- | --- |
+| Farmer / Farm manager | Existing Vivas AI users | Browse stores, see recommendations, buy, log product results, rate products, give data-sharing consent |
+| Partner admin | Manufacturer owner or brand manager | Manage store, products, users, API keys, webhooks; see insights and orders |
+| Partner user | Manufacturer sales, agronomy or support staff | Products, orders, insights (read), trials |
+| Vivas SME | Vivas agronomists and subject-matter experts | Verify partners and licences, validate product–problem claims, review AI inferences, approve trials |
+| Vivas admin | Vivas AI team | All of the above plus commission, rating rules, model settings, suspensions |
+| API client | Partner's ERP or CRM system | Push catalogue, stock and prices; pull insights, orders and ratings |
+
+### 3. Functional requirements
+
+**FR-1 Partner onboarding (Vivas admin + SME)**
+
+1. A partner self-registers: company name, type (Seed, Fertiliser, Urea, Nano-fertiliser, Bio-stimulant, Micronutrient, Crop protection, Organic input, Other), GSTIN, PAN, address, contact, website.
+2. The partner uploads licence documents: FCO registration, CIB&RC registration, seed licence, ISO / organic certificates. Each has a number, issue date and expiry date.
+3. An SME verifies the partner. Status moves Draft → Submitted → Under review → Approved / Rejected / Suspended. A reason is mandatory on Reject and Suspend.
+4. The system sends an alert 30 days before any licence expires. It auto-hides affected products on the expiry date.
+
+**FR-2 Store and product catalogue (Partner)**
+
+1. One store per partner, with banner, logo, about text, service regions (state / district), support contacts and return policy.
+2. Product fields: name, brand, product type, sub-type, composition (nutrient or active-ingredient lines with % w/w or w/v), formulation, pack sizes / SKUs with MRP and selling price, HSN, GST %, registration number, batch details, shelf life, storage, safety precautions, PHI days, re-entry hours, organic flag, images, label PDF, leaflet, videos and local-language names.
+3. Suitability matrix: crop (from `vivas_crops`), variety (optional), crop stage, dose per acre / per litre, application method, timing and interval.
+4. Problem-solving claims: link to `ch_problem` (deficiency, pest, disease, weed, abiotic). Each claim has a claim type (Cure / Control / Prevent / Correct deficiency / Yield boost) and an evidence note. A claim is shown to farmers only after an SME marks it Verified.
+5. Product status moves Draft → Submitted → SME approved → Live, or Paused / Delisted. Price and stock can change while Live without re-approval. Composition and claims cannot.
+6. Bulk upload by CSV/XLSX with a downloadable template and a per-row error report. Reuse the `ch_import_batch` / `ch_import_error` pattern, in new `pih_` tables.
+
+**FR-3 Field-evidence capture (Farm + automatic)**
+
+1. When a farmer records a treatment in Crop Health (`ch_case_treatment`) with a Hub product, the system creates a `pih_treatment_outcomes` row linked to it. This happens by background sync; no change is made to Crop Health screens in v1.
+2. Outcome fields: severity before and after (from `ch_case` and `ch_case_followup`), days to visible effect, problem resolved (Yes / Partly / No), yield vs expected (from `vivas_crop_yields`), side effects, farmer rating 1–5 and comment, and photos.
+3. The farmer is prompted (in-app notification) to record the outcome 7, 14 and 21 days after application.
+4. Partner field trials: a partner proposes a demo plot. The farm accepts, the SME approves, and treated vs control observations are captured on schedule.
+5. Each outcome is labelled **Verified** when it has a linked purchase or lot, a linked case and at least one follow-up. Only Verified outcomes count fully in ratings.
+
+**FR-4 AI inference engine**
+
+1. Inputs: treatment outcomes, cases and diagnoses, follow-ups, soil tests, yields, weather snapshot on `ch_case`, crop and stage, region, and product composition and claims.
+2. Outputs to partners, per product, crop, region and season: efficacy rate, average severity reduction, time to effect, yield uplift vs untreated or regional baseline, best and worst performing crops and stages, dose-response pattern, adverse-effect signals, demand signals (counts of open cases matching the product's claims by district), market-reach map, and suggested improvements (for example, “low efficacy on paddy at tillering in high-humidity weeks; consider label guidance on timing”).
+3. Each inference stores its sample size, confidence, evidence case ids and model version. It is labelled Preliminary until n ≥ 10 Verified outcomes from at least 5 farms.
+4. An SME can approve, annotate or suppress an inference before partners see it. Auto-publish is allowed when confidence ≥ 0.8 and n ≥ 30.
+5. Schedule: incremental run every hour on new data, full recompute nightly at 02:00 IST, and on demand by Vivas admin.
+
+**FR-5 Automatic product rating**
+
+1. The Field Performance Score (0–5) is computed per product overall, and per product × crop.
+2. Components and weights: efficacy 45 %, severity reduction 20 %, yield impact 15 %, farmer rating 10 %, consistency across farms 10 %. Minus a safety penalty (up to −1.0) for verified adverse events.
+3. A Bayesian average stops small samples from producing extreme scores:
+
+```latex
+\text{FPS} = \frac{v \cdot R + m \cdot C}{v + m}
+```
+
+Here R is the product's weighted score, v the number of Verified outcomes, m = 10 (minimum credible sample) and C the average score of its category for that crop.
+
+4. Badges: *Field Proven* (FPS ≥ 4.0, v ≥ 50), *Rising* (FPS up ≥ 0.3 in 90 days), *Needs Data* (v < 10). Each badge shows the sample size beside it.
+5. Partners cannot edit or delete ratings or outcomes. They can post one public response per review. Abuse is reported to an SME.
+
+**FR-6 AI recommendations to farmers**
+
+1. Triggers: a new or updated `ch_case` with a confirmed or top-ranked diagnosis, an active `ch_alert` from a risk rule, a soil test showing a deficiency, or a crop-stage nutrition window from the crop plan.
+2. The engine ranks Live products whose verified claim matches the problem and whose suitability matches the crop, stage and region. Ranking uses FPS for that crop, cost per acre, stock in the farmer's region, label compliance (PHI vs planned harvest date) and organic preference.
+3. Shown on the Hub “My Recommendations” page, with up to 3 products per problem. Each card shows why it was recommended, dose for the affected area, cost estimate, FPS and sample size, and the safe-harvest date. The farm's own stock of suitable inputs (from `vivas_inputs_inventory`) is shown first.
+4. Actions: Buy now, Add to shopping list (existing `vivas_shopping_list`), Create application task (existing `vivas_farm_tasks`), Dismiss with reason.
+5. Recommendations are never paid placements. Sponsored products, if introduced later, must be labelled “Sponsored” and kept outside the ranked list.
+
+**FR-7 Store, cart and checkout (Farm)**
+
+1. Marketplace: search, filters (crop, problem, product type, organic, partner, price, FPS) and sort. Comparison of up to 3 products.
+2. Cart per partner. Checkout captures delivery address (farm address by default), payment mode (online via configured processor, COD, or credit if the partner allows) and GST invoice details.
+3. On order confirmation: create a `pih_store_orders` row, create a `vivas_purchase_orders` row with items through the existing Buy logic, and create or link the partner as a `vivas_vendors` row.
+4. Order status: Placed → Accepted → Packed → Shipped → Delivered → Received, or Cancelled / Returned. On Received, create `vivas_inputs_lots` with batch and expiry, so the product appears in Assets › Materials & Inputs.
+5. Commission per partner or category is recorded on each order line for monthly settlement statements.
+
+**FR-8 Partner portal**
+
+Dashboard (orders, revenue, FPS trend, open demand by district), Products, Store profile, Field insights, Trials, Orders, Reviews, Users, API & webhooks, Compliance documents, Settlements.
+
+**FR-9 Integration and sync**
+
+1. Pull from Vivas into the Hub: cases, treatments, follow-ups, soil tests, yields and inventory. This uses an internal sync job reading existing tables, and a change cursor stored in `pih_sync_state`.
+2. Push from partners: products, prices, stock by region, and order status, through the partner API.
+3. Push to partners: webhooks `order.created`, `order.cancelled`, `review.created`, `rating.updated`, `inference.published`, `licence.expiring`, `demand.alert`.
+4. Pull by partners: insights, ratings, orders and anonymised outcome aggregates.
+
+**FR-10 Consent and privacy**
+
+1. Farms opt in to share anonymised field results with partners, per farm, with a clear explanation. Consent can be withdrawn at any time, and data is then excluded from the next recompute. This follows India's Digital Personal Data Protection Act, 2023.
+2. Aggregates shown to partners require at least 5 farms. Location is shown at district level only.
+
+### 4. Non-functional requirements
+
+- **Performance:** list pages < 1.5 s at p95 with 10,000 products; recommendation generation < 3 s after a diagnosis is confirmed.
+- **Availability:** 99.5 %. AI jobs run outside the request path in a queue table, `pih_jobs`, polled by a PM2 worker.
+- **Security:** OWASP ASVS L2 basics, bcrypt or argon2 for partner passwords, hashed API keys, HMAC webhooks, CORS allow-list and rate limits (120 req/min per key).
+- **Auditability:** every write is in `pih_audit_log` with before/after JSON.
+- **Localisation:** English plus local names via JSONB `local_names`, the same pattern as `ch_problem`; INR currency; IST display with UTC storage.
+- **Accessibility:** WCAG 2.2 AA contrast and keyboard navigation.
+
+## Data model: new tables
+
+The Hub needs 33 new `pih_` tables and no changes to existing tables. Every table also has `id UUID PK DEFAULT gen_random_uuid()`, `created_at`, `updated_at` and, where noted, `deleted_at`. FK = foreign key to an existing table.
+
+**Partners and stores**
+
+| Table | Key fields | Links |
+| --- | --- | --- |
+| `pih_partners` | partner\_code (unique), legal\_name, brand\_name, partner\_type (CHECK list), gstin (regex validated), pan, address, state, district, pincode, phone, email, website, logo\_url, status (draft / submitted / under\_review / approved / rejected / suspended), status\_reason, commission\_pct, verified\_by, verified\_at, deleted\_at | verified\_by → `vivas_users` |
+| `pih_partner_users` | partner\_id, user\_id, partner\_role (partner\_admin / partner\_user), is\_active | FK `vivas_users` (partner staff log in through the existing auth) |
+| `pih_partner_documents` | partner\_id, doc\_type (FCO / CIBRC / SEED\_LICENCE / GST / ISO / ORGANIC / OTHER), doc\_number, issued\_on, expires\_on, file\_url, review\_status, reviewed\_by, reviewed\_at, remarks | reviewed\_by → `vivas_users` |
+| `pih_stores` | partner\_id (unique), store\_name, slug (unique), banner\_url, about, service\_states TEXT\[\], service\_districts TEXT\[\], support\_phone, support\_email, return\_policy, min\_order\_value, cod\_enabled, credit\_enabled, is\_live | — |
+
+**Catalogue**
+
+| Table | Key fields | Links |
+| --- | --- | --- |
+| `pih_products` | partner\_id, product\_code, name, brand, product\_type, sub\_type, formulation, registration\_no, hsn\_code, gst\_pct, is\_organic, shelf\_life\_months, storage\_instructions, safety\_precautions, phi\_days, reentry\_hours, description, how\_it\_works, local\_names JSONB, label\_pdf\_url, status (draft / submitted / approved / live / paused / delisted), approved\_by, approved\_at, deleted\_at | approved\_by → `vivas_users` |
+| `pih_product_skus` | product\_id, sku\_code, pack\_size, pack\_unit, mrp, selling\_price, stock\_qty, region\_stock JSONB, is\_active | — |
+| `pih_product_composition` | product\_id, component\_name, nutrient\_code, active\_ingredient, value, unit (% w/w, % w/v, g/L, CFU/g), seq | nutrient\_code → `ch_nutrient.code` |
+| `pih_product_crop_suitability` | product\_id, crop\_id, variety\_id, crop\_stage, dose\_value, dose\_unit, dose\_basis (per acre / per litre / per kg seed), application\_method, timing\_text, interval\_days, max\_applications | FK `vivas_crops`, `vivas_crop_varieties` |
+| `pih_product_claims` | product\_id, problem\_id, crop\_id, claim\_type (cure / control / prevent / correct\_deficiency / yield\_boost), evidence\_note, sme\_status (pending / verified / rejected), sme\_by, sme\_at, sme\_remarks | FK `ch_problem`, `vivas_crops` |
+| `pih_product_media` | product\_id, media\_type (image / video / leaflet / label), url, caption, seq | — |
+| `pih_import_batches`, `pih_import_errors` | partner\_id, file\_name, total\_rows, ok\_rows, error\_rows, status / batch\_id, row\_no, field, message | Same pattern as `ch_import_batch` |
+
+**Field evidence and AI**
+
+| Table | Key fields | Links |
+| --- | --- | --- |
+| `pih_treatment_outcomes` | farm\_id, case\_treatment\_id (unique), case\_id, product\_id, sku\_id, lot\_id, crop\_id, planting\_id, district, state, applied\_on, dose\_value, dose\_unit, area\_treated, severity\_before, severity\_after, incidence\_before, incidence\_after, days\_to\_effect, resolved (yes / partly / no), yield\_actual, yield\_expected, side\_effects, farmer\_rating (1–5), farmer\_comment, photos JSONB, is\_verified, source (crop\_health\_sync / farmer\_form / trial) | FK `ch_case_treatment`, `ch_case`, `vivas_farms`, `vivas_crops`, `vivas_inputs_lots` |
+| `pih_field_trials` | partner\_id, product\_id, farm\_id, crop\_id, planting\_id, treated\_area, control\_area, start\_date, end\_date, protocol, status (proposed / accepted / sme\_approved / running / completed / cancelled), sme\_by | FK `vivas_farms`, `vivas_crops`, `vivas_plantings` |
+| `pih_trial_observations` | trial\_id, observed\_on, plot (treated / control), metric, value, unit, photo\_url, observed\_by | — |
+| `pih_ai_inferences` | product\_id, crop\_id, state, district, season, inference\_type (efficacy / dose\_response / stage\_fit / adverse\_signal / demand / improvement), title, body, metrics JSONB, sample\_size, farm\_count, confidence, evidence\_case\_ids UUID\[\], model\_name, model\_version, ai\_request\_id, status (preliminary / pending\_review / published / suppressed), reviewed\_by | FK `ch_ai_request` |
+| `pih_product_ratings` | product\_id, crop\_id (null = overall), fps, raw\_score, verified\_count, farm\_count, efficacy\_rate, avg\_severity\_reduction, yield\_uplift\_pct, avg\_farmer\_rating, safety\_penalty, badge, computed\_at | Snapshot history; latest row is shown |
+| `pih_recommendations` | farm\_id, case\_id, alert\_id, soil\_test\_id, problem\_id, crop\_id, product\_id, sku\_id, rank, score, reason JSONB, dose\_for\_area, est\_cost, safe\_harvest\_date, status (shown / bought / added\_to\_list / task\_created / dismissed), dismiss\_reason, ai\_request\_id | FK `ch_case`, `ch_alert`, `vivas_soil_tests`, `ch_problem` |
+| `pih_reviews` | product\_id, farm\_id, user\_id, outcome\_id, rating, title, body, partner\_reply, partner\_replied\_at, is\_flagged, moderation\_status | FK `pih_treatment_outcomes` |
+
+**Commerce**
+
+| Table | Key fields | Links |
+| --- | --- | --- |
+| `pih_carts`, `pih_cart_items` | farm\_id, user\_id, partner\_id / cart\_id, sku\_id, qty, unit\_price, recommendation\_id | FK `vivas_farms` |
+| `pih_store_orders` | order\_no, farm\_id, partner\_id, user\_id, purchase\_order\_id, vendor\_id, subtotal, gst\_amount, shipping, total, payment\_mode, payment\_status, status, delivery\_address, invoice\_no, invoice\_url, cancelled\_reason | FK `vivas_purchase_orders`, `vivas_vendors` |
+| `pih_store_order_items` | order\_id, product\_id, sku\_id, qty, unit\_price, gst\_pct, line\_total, commission\_pct, commission\_amount, batch\_no, expiry\_date, inputs\_lot\_id | FK `vivas_inputs_lots` (filled on receipt) |
+| `pih_order_status_history` | order\_id, from\_status, to\_status, changed\_by, note | — |
+| `pih_settlements` | partner\_id, period\_start, period\_end, gross, commission, net\_payable, status, statement\_url | — |
+
+**Platform**
+
+| Table | Key fields | Links |
+| --- | --- | --- |
+| `pih_api_keys` | partner\_id, key\_name, key\_hash, key\_preview, scopes TEXT\[\], expires\_at, last\_used\_at, is\_revoked | — |
+| `pih_webhooks`, `pih_webhook_deliveries` | partner\_id, endpoint\_url, secret, events TEXT\[\], is\_active / webhook\_id, event, payload, attempt, response\_code, next\_retry\_at, status | — |
+| `pih_data_sharing_consents` | farm\_id, granted\_by, scope (anonymised\_outcomes / trials), granted\_at, withdrawn\_at | FK `vivas_farms`, `vivas_users` |
+| `pih_sync_state`, `pih_jobs` | source\_table, last\_cursor, last\_run\_at / job\_type, payload, status, attempts, run\_after, error | — |
+| `pih_notifications` | recipient\_user\_id, partner\_id, farm\_id, type, title, body, link, read\_at | FK `vivas_users` |
+| `pih_audit_log` | actor\_user\_id, actor\_partner\_id, entity, entity\_id, action, before JSONB, after JSONB, ip | — |
+
+## API specification
+
+There are two route groups: an internal API for the Vivas web app, and a versioned external API for partner systems. Both return `{ success, data, message, meta }`, the same shape the existing routes use.
+
+**Internal API — `/api/pih` (session token, role checked)**
+
+| Area | Endpoints |
+| --- | --- |
+| Partners | `GET/POST /partners`, `GET/PUT /partners/:id`, `POST /partners/:id/submit`, `POST /partners/:id/review` (approve / reject / suspend + reason), `GET/POST /partners/:id/documents`, `PUT /documents/:id/review` |
+| Partner users | `GET/POST /partners/:id/users`, `PUT/DELETE /partner-users/:id` |
+| Store | `GET/PUT /stores/:partnerId`, `GET /stores/slug/:slug` (public marketplace view) |
+| Products | `GET /products` (filters: crop\_id, problem\_id, type, partner\_id, organic, min\_fps, q, sort, cursor), `GET/POST /products`, `GET/PUT/DELETE /products/:id`, `POST /products/:id/submit`, `POST /products/:id/review`, `POST /products/:id/status`, sub-resources `/skus`, `/composition`, `/suitability`, `/claims`, `/media` |
+| Claims review | `GET /claims?sme_status=pending`, `PUT /claims/:id/review` |
+| Bulk import | `GET /import/template`, `POST /import` (multipart), `GET /import/:batchId/errors` |
+| Outcomes | `GET /outcomes?product_id&farm_id`, `POST /outcomes` (farmer form), `PUT /outcomes/:id`, `POST /outcomes/sync` (admin trigger) |
+| Trials | `GET/POST /trials`, `PUT /trials/:id/status`, `POST /trials/:id/observations` |
+| Insights | `GET /insights?product_id&crop_id&district&season`, `PUT /insights/:id/review`, `POST /insights/recompute` (admin) |
+| Ratings | `GET /products/:id/rating` (overall + per crop + history), `GET /ratings/leaderboard?crop_id&type` |
+| Recommendations | `GET /recommendations?farm_id&status`, `POST /recommendations/generate` ({case\_id} or {soil\_test\_id} or {alert\_id}), `PUT /recommendations/:id` (status / dismiss reason), `POST /recommendations/:id/add-to-shopping-list`, `POST /recommendations/:id/create-task` |
+| Cart & orders | `GET/POST/PUT/DELETE /cart`, `POST /checkout`, `GET /orders`, `GET /orders/:id`, `PUT /orders/:id/status`, `POST /orders/:id/receive` (creates the inputs lot) |
+| Reviews | `GET/POST /products/:id/reviews`, `POST /reviews/:id/reply`, `POST /reviews/:id/flag` |
+| Consent | `GET/PUT /consents` (current farm) |
+| Partner dashboard | `GET /partner-dashboard/summary`, `/demand-map`, `/fps-trend`, `/sales` |
+| Settlements | `GET /settlements`, `POST /settlements/generate` (admin) |
+| Keys & webhooks | `GET/POST/DELETE /api-keys`, `GET/POST/PUT/DELETE /webhooks`, `POST /webhooks/:id/test`, `GET /webhooks/:id/deliveries` |
+
+**How the internal API calls existing modules (no duplication)**
+
+- Checkout calls the same service code used by `POST /api/buy/purchase-orders` to create the PO, and by `POST /api/contacts/vendors` to create the vendor if one is missing. Extract shared functions into `services/` only with approval; until then, call the existing endpoints over HTTP internally.
+- Receive calls `POST /api/inputs/lots`.
+- Create task calls `POST /api/tasks`. Add to shopping list calls `POST /api/buy/shopping-list`.
+- Recommendation generation reads `ch_case`, `ch_case_diagnosis` and `GET /api/ch/cases/:id/remedies` for context.
+
+**External partner API — `/api/pih/v1` (header `X-API-Key`, scopes)**
+
+| Method & path | Scope | Purpose |
+| --- | --- | --- |
+| `GET /v1/products`, `GET /v1/products/:code` | catalog:read | Read own catalogue |
+| `PUT /v1/products/:code` | catalog:write | Upsert product (goes to review if composition or claims change) |
+| `PATCH /v1/skus/:sku/price`, `PATCH /v1/skus/:sku/stock` | catalog:write | Price and regional stock sync |
+| `GET /v1/orders?status&since`, `PATCH /v1/orders/:no/status` | orders | Pull orders, push fulfilment status and invoice |
+| `GET /v1/ratings`, `GET /v1/ratings/:code` | insights:read | FPS and badges |
+| `GET /v1/insights?product&crop&district&season` | insights:read | Published AI inferences |
+| `GET /v1/outcomes/aggregate?product&crop&district` | insights:read | Anonymised aggregates (min 5 farms) |
+| `GET /v1/demand?product&district` | insights:read | Open matching field problems by district |
+| `GET /v1/docs` | public | OpenAPI 3.1 spec |
+
+Webhook payloads carry `event`, `id`, `created_at` and `data`, with header `X-Vivas-Signature: sha256=<HMAC>`. Retries run at 1 min, 5 min, 30 min, 2 h and 12 h, then the delivery is marked failed and the partner admin is notified.
+
+## Pages, menus, validations and workflows
+
+### Menu
+
+Add a new sidebar dropdown, **Input Partner Hub** (lucide icon `Store`), between *Buy & Procurement* and *Assets*. Use the same `nav-item` + `submenu` pattern and an `inputHubMenuOpen` state, like the existing menus. Sub-items are shown by role:
+
+| Sub-menu | screen key | Farmer | Partner | SME / Admin |
+| --- | --- | --- | --- | --- |
+| Marketplace | `pih-marketplace` | ✓ | preview | ✓ |
+| My Recommendations | `pih-recommendations` | ✓ | — | ✓ |
+| My Store Orders | `pih-orders` | ✓ | — | ✓ |
+| Product Results & Reviews | `pih-results` | ✓ | — | ✓ |
+| Partner Dashboard | `pih-partner-dashboard` | — | ✓ | ✓ |
+| Products & Store | `pih-partner-products` | — | ✓ | ✓ |
+| Field Insights (AI) | `pih-insights` | — | ✓ | ✓ |
+| Field Trials | `pih-trials` | accept / log | ✓ | ✓ |
+| Partner Orders | `pih-partner-orders` | — | ✓ | ✓ |
+| Integrations (API & Webhooks) | `pih-integrations` | — | ✓ | ✓ |
+| Partner Admin (onboarding, claims, AI review, settlements) | `pih-admin` | — | — | ✓ |
+
+Partner users who have no farm see only their partner items, with Dashboard as the landing page after login. Farmers also get a **Data Sharing** card under Settings → a new `pih-consent` sub-module (rendered from the Hub folder).
+
+### Pages
+
+| Page (file in `frontend/src/partnerhub/`) | Main content |
+| --- | --- |
+| `Marketplace.jsx` | Stat cards (products, partners, live offers). Search bar, filters for crop / problem / type / organic / FPS / price. Product cards with image, FPS badge + sample size, price per pack, cost per acre. Compare tray (3). |
+| `StorePage.jsx` | Partner banner, verified badge, licences, service regions, product grid, reviews. |
+| `ProductDetail.jsx` | Gallery, composition table, suitability matrix by crop and stage, verified problem claims linked to the Crop Health library, dose calculator for the farm's planting area, FPS breakdown chart, per-crop ratings, reviews, label PDF, Add to cart. |
+| `Recommendations.jsx` | Grouped by open field problem (case no., crop, location, severity). Up to 3 product cards each with “Why this?” explanation, safe-harvest date, in-stock-on-farm flag, and actions Buy / Add to list / Create task / Dismiss. |
+| `CartCheckout.jsx` | Cart per partner, GST breakdown, address, payment mode, terms consent. |
+| `MyOrders.jsx` | Order list with status timeline, invoice download, Mark received (batch and expiry entry), Cancel or return. |
+| `ProductResults.jsx` | Outcome forms due (7/14/21-day prompts), before/after severity, photos, rating, review. |
+| `PartnerDashboard.jsx` | KPIs: revenue, orders, FPS, verified outcomes, open demand. FPS trend line, demand heat map (Leaflet, district level), top / bottom crops, alerts (licence expiry, adverse signals). |
+| `PartnerProducts.jsx` | Product table with status chips; add / edit wizard with steps Basic → Composition → SKUs & price → Crop suitability → Problem claims → Media & label → Compliance → Submit. Bulk upload. Store profile tab. |
+| `FieldInsights.jsx` | Filters for product / crop / district / season. Inference cards with confidence, sample size, evidence count, Preliminary or Published label, efficacy and dose-response charts, and an export to CSV / PDF. |
+| `FieldTrials.jsx` | Trial list, proposal form, observation schedule, treated vs control comparison chart. |
+| `PartnerOrders.jsx` | Order queue, accept / pack / ship with tracking no., invoice upload, settlements tab. |
+| `Integrations.jsx` | API keys (create shows the key once), scopes, webhooks with test button and delivery log, link to OpenAPI docs. |
+| `PartnerAdmin.jsx` | Tabs: Partner verification, Document review, Claim review, Product approval, AI inference review, Rating rules & weights, Commission, Settlements, Audit log. |
+| `DataSharingConsent.jsx` | Plain-language explanation, opt-in toggle, history of grants and withdrawals. |
+
+### Validations
+
+- **GSTIN:** `^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$`. **PAN:** `^[A-Z]{5}[0-9]{4}[A-Z]$`. **Pincode:** 6 digits. **Phone:** 10 digits, starting 6–9. **HSN:** 4, 6 or 8 digits. **GST %:** one of 0, 5, 12, 18, 28.
+- A licence document is required by product type: fertiliser and nano-fertiliser need FCO; crop protection needs CIB\&RC; seed needs a seed licence. `expires_on` must be later than today. Approval is blocked if no approved, unexpired matching document exists.
+- Composition lines must not total more than 100 % w/w. Every nutrient line must map to a `ch_nutrient` code. An organic product cannot list a synthetic active ingredient flagged in the lookup.
+- At least one SKU, one crop-suitability row and one problem claim are required to submit. MRP ≥ selling price > 0. Pack size > 0.
+- Dose must sit between the min and max of the crop-suitability rows. PHI days must be ≥ 0. A recommendation is suppressed if planned harvest is earlier than the application date + PHI.
+- Checkout: quantity ≤ regional stock, order ≥ store min order value, and the delivery district must be in the store's service districts.
+- Outcome form: severity after cannot be recorded before the application date. Rating 1–5. A review needs at least 20 characters. Photos up to 5 MB each, JPG / PNG / WEBP.
+- File uploads go through MIME sniffing, with max 10 MB for PDFs, stored under `backend/uploads/partner_hub/`.
+- API: reject unknown fields, enforce `Idempotency-Key` on POST, 422 with field-level errors.
+
+### Key workflows
+
+1. **Partner onboarding:** register → upload documents → SME review → approved → store goes live once at least one product is approved.
+2. **Product approval:** partner submits → SME checks composition, licence and claims → approve (Live) or return with remarks → later edits to composition or claims send it back to review.
+3. **Field issue to purchase:** case confirmed in Crop Health → sync job sees it → recommendation generated → farmer notified → Buy → store order + PO + vendor created → partner ships → farmer marks received → inputs lot created → application task done → treatment logged.
+4. **Outcome to rating and insight:** treatment logged → outcome row auto-created → 7/14/21-day prompts → follow-up recorded → outcome Verified → FPS recomputed → inference updated → SME review if needed → published → partner webhook `rating.updated` / `inference.published`.
+5. **Demand alert:** cluster of open cases for a problem in a district → matching partners get `demand.alert` (counts only, no farm identities).
+6. **Consent withdrawal:** farm withdraws → its outcomes are excluded from the next aggregate recompute → audit entry written.
+
+## Changes needed in the existing application (separate, not done now)
+
+Nothing below is applied in phase 1. Items A1–A3 are the minimum wiring needed to make the Hub visible and reachable. The B items are optional improvements, to be done later with approval, each as its own small diff.
+
+| # | File / table | Change | Why | Risk |
+| --- | --- | --- | --- | --- |
+| A1 | `backend/server.js` | Add 2 lines: `import partnerHubRouter` + `app.use('/api/pih', partnerHubRouter)`, and the same for `partnerApiV1` | Mount the new routes | Low (additive) |
+| A2 | `frontend/src/App.jsx` | Add the Input Partner Hub dropdown after Buy & Procurement, the `inputHubMenuOpen` state, and `currentScreen` cases rendering components from `partnerhub/` | Show the menu and pages | Low (additive) |
+| A3 | `deploy.sh` / PM2 | Add a second PM2 process `vivasai-pih-worker` for AI and sync jobs | Run jobs outside API requests | Low |
+| B1 | `server.js` auth | Replace the in-memory `activeSessions` map with persistent tokens (DB table or signed JWT), and add role and partner claims | Sessions survive restarts; partner portal and API need stable auth | Medium: test all modules |
+| B2 | `grow/CropHealth.jsx` (treatment form) | Optional “Product from Input Partner Hub” picker that fills `input_id` / `input_name_text`, plus an outcome prompt after save | Richer, exact product link instead of name matching | Low |
+| B3 | `ch_case_treatment` | Add nullable `pih_product_id UUID` | Direct join instead of the outcome bridge table | Low (nullable) |
+| B4 | `vivas_inputs_catalog` | Add nullable `pih_product_id UUID` and `source VARCHAR(20)` | Farm catalogue entries created from Hub purchases stay linked | Low |
+| B5 | `ch_control_measure` | Allow `input_id` to reference Hub products (via B4) | Crop Health remedies list partner products | Low |
+| B6 | `vivas_plantings` | Add `farm_id`, `crop_id`, `variety_id` FKs | Accurate crop and farm linkage for outcomes | Medium (backfill) |
+| B7 | Dashboard widgets (`vivas_widget_configs`) | New widgets: “AI Recommendations” and “Open store orders” | Surface the Hub on the home dashboard | Low |
+| B8 | Settings › Users & Roles | Add the partner and SME roles to the roles list | One place to manage access | Low |
+| B9 | Notifications settings | Add Hub events (recommendation, order status, outcome due) | Farmer control over alerts | Low |
+
+Until B2–B4 are done, the sync job links a treatment to a Hub product by matching `ch_case_treatment.input_id` → `vivas_inputs_lots` / `vivas_inputs_catalog` created by a Hub order. Where it can't match that way, it matches by exact product name and brand, and flags low-confidence matches for SME review.
+
+## Step-by-step: build and test in Antigravity
+
+Work in 6 phases. Each phase ends with your review, so a mistake never spreads.
+
+**Setup (once)**
+
+1. Back up first. Run `git init` (if not already a repo), `git add -A`, `git commit -m "baseline before Partner Hub"`, then `git checkout -b feature/partner-hub`. Also take a `pg_dump` of the database.
+2. Export this doc as Markdown and save it as `VivasAI/docs/PIH_SRS.md`.
+3. Open the `VivasAI` folder in Antigravity. Set the agent to **Planning** mode and terminal and review policy to **Request review**, so nothing runs or changes without your OK.
+4. Paste the **Master prompt**. Check the Implementation Plan artifact it returns: it must list reused tables and APIs, and say “no existing files modified”. Comment on the plan in the artifact if anything is off, then approve.
+
+**Phase prompts (paste one at a time, after the previous phase passes)**
+
+| Phase | Prompt to paste | You test |
+| --- | --- | --- |
+| 1 Data | “Phase 1: create `database/partner_hub_migration.sql` and its rollback, per SRS Data model. Run them on a copy DB first and show me `\dt pih_*`.” | Migration runs twice without error; rollback removes only `pih_` tables; existing tables unchanged |
+| 2 Partners + catalogue | “Phase 2: build `routes/partnerHub.js` partners, documents, stores, products, SKUs, composition, suitability, claims, import, plus the pages PartnerProducts, PartnerAdmin (verification, claims, approval tabs). Show me the A1/A2 diff separately.” | Register a partner, upload an FCO licence, SME approves, add product, invalid GSTIN rejected, product without licence blocked |
+| 3 Store + checkout | “Phase 3: Marketplace, StorePage, ProductDetail, CartCheckout, MyOrders, PartnerOrders. Checkout must create `vivas_purchase_orders` and the vendor through existing APIs; receive must create `vivas_inputs_lots`.” | Buy a product; PO appears in Buy & Procurement; vendor appears in Contacts; after Receive, lot appears in Assets › Materials & Inputs |
+| 4 Evidence + AI + rating | “Phase 4: sync worker, `pih_treatment_outcomes`, ProductResults, `services/pihAiEngine.js`, FPS rating job, FieldInsights, FieldTrials. Seed 200 synthetic outcomes.” | Log a treatment in Crop Health → outcome row appears; FPS changes after a verified outcome; under 10 outcomes shows “Needs Data”; partner never sees farm names or GPS |
+| 5 Recommendations | “Phase 5: recommendation generation on case, alert and soil-test triggers; Recommendations page with Buy / Add to list / Create task / Dismiss.” | Confirm a diagnosis → up to 3 suitable products appear with reasons; PHI conflict is suppressed; Create task shows in Tasks |
+| 6 Integrations | “Phase 6: `routes/partnerApiV1.js`, API keys, webhooks with HMAC and retries, OpenAPI at /api/pih/v1/docs, Integrations page, consent page, audit log.” | Call the API with a key (Postman or curl); revoked key gets 401; webhook test delivers and verifies signature; consent withdrawal drops that farm from aggregates |
+
+**After each phase**
+
+1. Ask Antigravity: “Run the app, open each new page in the browser, and give me a walkthrough artifact with screenshots.” Review the screenshots against the Vivas AI look: same sidebar, cards and colours.
+2. Run a regression check yourself: open Dashboard, Tasks, Crop Health, Buy & Procurement, Assets and Settings, and confirm they behave as before.
+3. Commit with a phase message, e.g. `git commit -m "PIH phase 2: partners and catalogue"`.
+4. Approve the A1/A2 wiring diff only when phase 2 passes. Leave the B items for a later, separate request.
+
+**Go-live**
+
+1. Run the migration on production during a quiet window, after a fresh `pg_dump`.
+2. Deploy with `./deploy.sh`, then start the PM2 worker (A3).
+3. Onboard 2–3 pilot partners and 10 pilot farms with consent. Watch `pih_audit_log`, `pih_jobs` errors and webhook failures for 2 weeks before opening the Hub to everyone.

@@ -1,0 +1,70 @@
+{
+  "initial_url": "https://my.tend.com/settings",
+  "tabs_discovered": [],
+  "pages": {
+    "initial": {
+      "title": "Settings | Tend",
+      "url": "https://my.tend.com/settings",
+      "headings": [
+        {
+          "tag": "H1",
+          "text": "Settings"
+        },
+        {
+          "tag": "H2",
+          "text": "Cookie consent"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "",
+          "classes": "toggle",
+          "type": "button"
+        },
+        {
+          "text": "",
+          "classes": "",
+          "type": "button"
+        },
+        {
+          "text": "Close And Don't Show Again",
+          "classes": "cursor-pointer btn-not-show-intro-again",
+          "type": "button"
+        },
+        {
+          "text": "Feedback",
+          "classes": "",
+          "type": "button"
+        },
+        {
+          "text": "",
+          "classes": "quick-add-button ng-star-inserted",
+          "type": "button"
+        },
+        {
+          "text": "Close cookie notice",
+          "classes": "cc-icon-button cc-banner__close",
+          "type": "button"
+        },
+        {
+          "text": "Manage Cookies",
+          "classes": "cc-link cc-link--button",
+          "type": "button"
+        },
+        {
+          "text": "Accept All",
+          "classes": "cc-button",
+          "type": "button"
+        },
+        {
+          "text": "Reject All",
+          "classes": "cc-button",
+          "type": "button"
+        }
+      ],
+      "inputs": [],
+      "labels": [],
+      "tables": []
+    }
+  }
+}
