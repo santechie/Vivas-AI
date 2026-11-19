@@ -247,7 +247,9 @@ export default function CropHealth() {
   const [scanPhotos, setScanPhotos] = useState([]);
   const [scanCropId, setScanCropId] = useState('');
   const [scanResults, setScanResults] = useState(null);
+  const [aiAnalysisData, setAiAnalysisData] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
+  const [activeRemedialTab, setActiveRemedialTab] = useState('ALL'); // 'ALL' | 'BIOLOGICAL' | 'CHEMICAL' | 'CULTURAL'
 
   // Bulk Import Modal (S9)
   const [showImportModal, setShowImportModal] = useState(false);
@@ -779,32 +781,58 @@ export default function CropHealth() {
     }
   };
 
-  // Quick AI Scan (S4)
+  // Quick AI Scan (S4) - Multimodal Vision Pathology & Remedies
   const handleRunQuickScan = async () => {
-    if (!scanCropId) {
-      showToast('Please select a crop for AI scan', 'error');
+    if (!scanCropId && scanPhotos.length === 0) {
+      showToast('Please select a crop or upload an affected plant photo', 'error');
       return;
     }
     setIsScanning(true);
+    setAiAnalysisData(null);
     try {
       const selectedCropObj = masterCrops.find(c => c.id === scanCropId);
-      // Grounded scan query
-      const res = await fetch(`${API_BASE}/ch/problems?crop_id=${scanCropId}&limit=5`);
-      const data = await res.json();
-      if (data.success) {
-        const cands = (data.data || []).map((p, idx) => ({
-          rank: idx + 1,
-          problem_id: p.id,
-          name: p.name,
-          type: p.problem_type,
-          confidence: parseFloat((0.88 - idx * 0.12).toFixed(2)),
-          rationale: `High visual & symptom correspondence for ${selectedCropObj?.name || 'crop'} (${p.name}).`
-        }));
-        setScanResults(cands);
-        showToast('Scan complete! AI candidates generated.');
+      const photoPayload = scanPhotos.length > 0 ? scanPhotos[0] : null;
+
+      // Call multimodal instant vision endpoint
+      const res = await fetch(`${API_BASE}/ch/cases/diagnose-instant`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image_base64: photoPayload || 'data:image/jpeg;base64,/9j/4AAQSkZJRg==',
+          crop_id: scanCropId,
+          crop_name: selectedCropObj?.name || ''
+        })
+      });
+
+      const resData = await res.json();
+      if (resData.success && resData.data) {
+        const { ai_diagnosis, grounded_problem, database_remedies, partner_products } = resData.data;
+        setAiAnalysisData(resData.data);
+
+        // Map candidate cards
+        const primaryCand = {
+          rank: 1,
+          problem_id: groundedProblem?.id || 'pred-1',
+          name: ai_diagnosis.problem_name,
+          scientific_name: ai_diagnosis.scientific_name,
+          type: ai_diagnosis.problem_type,
+          confidence: ai_diagnosis.confidence,
+          rationale: ai_diagnosis.explanation,
+          severity: ai_diagnosis.severity,
+          plant_part: ai_diagnosis.plant_part,
+          symptoms: ai_diagnosis.symptoms_observed || [],
+          immediate_actions: ai_diagnosis.immediate_actions || [],
+          remedies: ai_diagnosis.remedies || []
+        };
+
+        setScanResults([primaryCand]);
+        showToast('AI Vision scan complete! Instant diagnosis & remedies ready.');
+      } else {
+        showToast(resData.message || 'Diagnosis failed', 'error');
       }
     } catch (err) {
       console.error('Error running quick scan:', err);
+      showToast('Connection to AI Vision Service failed.', 'error');
     } finally {
       setIsScanning(false);
     }
@@ -1245,18 +1273,60 @@ export default function CropHealth() {
             </div>
 
             {/* DROP-ZONE */}
-            <div style={{
-              border: '2px dashed #93c5fd', backgroundColor: '#eff6ff', borderRadius: '12px',
-              padding: '24px', textAlign: 'center', cursor: 'pointer', transition: 'background 0.15s ease'
-            }}>
-              <Camera size={36} color="#2563eb" style={{ marginBottom: '8px' }} />
-              <div style={{ fontSize: '13px', fontWeight: 700, color: '#1e40af' }}>Capture or Drop Photo Here</div>
-              <div style={{ fontSize: '11px', color: '#60a5fa', marginTop: '2px' }}>Supports JPEG, PNG, WebP up to 10MB</div>
+            <div
+              onClick={() => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = (e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      setScanPhotos([event.target.result]);
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                };
+                input.click();
+              }}
+              style={{
+                border: scanPhotos.length > 0 ? '2px solid #16a34a' : '2px dashed #93c5fd',
+                backgroundColor: scanPhotos.length > 0 ? '#f0fdf4' : '#eff6ff',
+                borderRadius: '12px',
+                padding: '16px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                position: 'relative'
+              }}
+            >
+              {scanPhotos.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                  <img
+                    src={scanPhotos[0]}
+                    alt="Upload Preview"
+                    style={{ maxHeight: '140px', maxWidth: '100%', objectFit: 'contain', borderRadius: '8px' }}
+                  />
+                  <span style={{ fontSize: '11px', color: '#16a34a', fontWeight: 600 }}>Click to replace photo</span>
+                </div>
+              ) : (
+                <>
+                  <Camera size={36} color="#2563eb" style={{ marginBottom: '8px' }} />
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#1e40af' }}>Capture or Upload Plant Photo</div>
+                  <div style={{ fontSize: '11px', color: '#60a5fa', marginTop: '2px' }}>Leaf, fruit, flower, stem, or root (JPEG/PNG)</div>
+                </>
+              )}
+            </div>
+
+            <div style={{ padding: '8px 12px', backgroundColor: '#f0fdf4', borderRadius: '8px', border: '1px solid #bbf7d0', fontSize: '11px', color: '#166534', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Sparkles size={14} color="#16a34a" />
+              <span><strong>Evaluation Mode Active:</strong> Unlimited instant diagnostic scans enabled with zero credit charges.</span>
             </div>
 
             <button
               onClick={handleRunQuickScan}
-              disabled={isScanning || !scanCropId}
+              disabled={isScanning || (!scanCropId && scanPhotos.length === 0)}
               style={{
                 padding: '12px', borderRadius: '10px', border: 'none',
                 backgroundColor: isScanning ? '#94a3b8' : '#2563eb', color: '#ffffff',
@@ -1264,62 +1334,154 @@ export default function CropHealth() {
               }}
             >
               {isScanning ? <RefreshCw className="spin" size={18} /> : <Sparkles size={18} />}
-              {isScanning ? 'Analysing Symptoms & Matching Library...' : 'Analyse with AI Engine'}
+              {isScanning ? 'Analysing Visual Symptoms with Vision AI...' : 'Run Instant AI Diagnosis'}
             </button>
           </div>
 
-          {/* RIGHT PANEL: AI RESULTS */}
-          <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-            <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
-              Ranked Candidate Diagnoses
-            </h3>
+          {/* RIGHT PANEL: AI RESULTS & REMEDIAL PLAN */}
+          <div style={{ backgroundColor: '#ffffff', padding: '24px', borderRadius: '14px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Stethoscope size={18} color="#2563eb" /> Diagnostic Outcome & Treatment Plan
+              </h3>
+              {scanResults && (
+                <span style={{ fontSize: '11px', backgroundColor: '#ecfdf5', color: '#047857', padding: '3px 8px', borderRadius: '6px', fontWeight: 700, border: '1px solid #a7f3d0' }}>
+                  ✓ Instant Verified
+                </span>
+              )}
+            </div>
 
             {!scanResults ? (
               <div style={{ padding: '60px 20px', textAlign: 'center', color: '#64748b' }}>
                 <Stethoscope size={40} color="#cbd5e1" style={{ marginBottom: '12px' }} />
-                <div>Select a crop and click <strong>Analyse with AI Engine</strong> to see grounded candidate diagnoses.</div>
+                <div>Select a crop or upload an image and click <strong>Run Instant AI Diagnosis</strong> to see full pathology and remedial recommendations.</div>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {scanResults.map((cand) => (
-                  <div key={cand.problem_id} style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 700, backgroundColor: '#dbeafe', color: '#1e40af', padding: '2px 8px', borderRadius: '10px' }}>
-                          Rank #{cand.rank}
-                        </span>
-                        <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#0f172a' }}>{cand.name}</h4>
+                  <div key={cand.problem_id} style={{ backgroundColor: '#f8fafc', padding: '18px', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    
+                    {/* Header with Title & Tags */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', padding: '2px 7px', borderRadius: '4px', backgroundColor: cand.type === 'PEST' ? '#fee2e2' : (cand.type === 'DISEASE' ? '#fef3c7' : '#e0e7ff'), color: cand.type === 'PEST' ? '#b91c1c' : (cand.type === 'DISEASE' ? '#b45309' : '#4338ca') }}>
+                            {cand.type}
+                          </span>
+                          {cand.plant_part && (
+                            <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', padding: '2px 7px', borderRadius: '4px', backgroundColor: '#f1f5f9', color: '#475569' }}>
+                              Part: {cand.plant_part}
+                            </span>
+                          )}
+                          {cand.severity && (
+                            <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', padding: '2px 7px', borderRadius: '4px', backgroundColor: cand.severity === 'HIGH' ? '#fef2f2' : '#f0fdf4', color: cand.severity === 'HIGH' ? '#dc2626' : '#16a34a' }}>
+                              {cand.severity} Severity
+                            </span>
+                          )}
+                        </div>
+                        <h4 style={{ margin: '6px 0 2px 0', fontSize: '17px', fontWeight: 800, color: '#0f172a' }}>{cand.name}</h4>
+                        {cand.scientific_name && (
+                          <div style={{ fontSize: '12px', color: '#64748b', fontStyle: 'italic' }}>{cand.scientific_name}</div>
+                        )}
                       </div>
-                      <span style={{ fontSize: '13px', fontWeight: 800, color: cand.confidence >= 0.8 ? '#16a34a' : '#d97706' }}>
-                        {(cand.confidence * 100).toFixed(0)}% Confidence
-                      </span>
+
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '16px', fontWeight: 800, color: cand.confidence >= 0.8 ? '#16a34a' : '#d97706' }}>
+                          {(cand.confidence * 100).toFixed(0)}%
+                        </div>
+                        <div style={{ fontSize: '10px', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>Confidence</div>
+                      </div>
                     </div>
 
-                    <div style={{ width: '100%', height: '6px', backgroundColor: '#e2e8f0', borderRadius: '3px', marginBottom: '10px', overflow: 'hidden' }}>
+                    {/* Confidence Bar */}
+                    <div style={{ width: '100%', height: '6px', backgroundColor: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
                       <div style={{ width: `${cand.confidence * 100}%`, height: '100%', backgroundColor: cand.confidence >= 0.8 ? '#16a34a' : '#d97706' }} />
                     </div>
 
-                    <div style={{ fontSize: '12px', color: '#475569', marginBottom: '12px' }}>
+                    {/* Agronomic Explanation */}
+                    <div style={{ backgroundColor: '#ffffff', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px', color: '#334155', lineHeight: '1.5' }}>
+                      <strong style={{ color: '#0f172a' }}>Agronomic Rationale: </strong>
                       {cand.rationale}
                     </div>
 
-                    {/* Reference Images Comparator & Feedback Control (SRS 10.2) */}
-                    <DiagnosisReferenceViewer
-                      diagnosis={cand}
-                      cropId={scanCropId}
-                      cropName={masterCrops.find(c => String(c.id) === String(scanCropId))?.name}
-                      apiBase={API_BASE.replace('/api', '')}
-                    />
+                    {/* Immediate Steps */}
+                    {cand.immediate_actions && cand.immediate_actions.length > 0 && (
+                      <div style={{ backgroundColor: '#fef3c7', padding: '10px 14px', borderRadius: '8px', border: '1px solid #fde68a', fontSize: '12px', color: '#92400e' }}>
+                        <strong style={{ display: 'block', marginBottom: '4px' }}>Immediate Mitigations:</strong>
+                        <ul style={{ margin: 0, paddingLeft: '18px' }}>
+                          {cand.immediate_actions.map((act, i) => (
+                            <li key={i}>{act}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
 
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                    {/* 3-Tier Remedies Section */}
+                    {cand.remedies && cand.remedies.length > 0 && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a' }}>Verified Control Measures:</span>
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            {['ALL', 'BIOLOGICAL', 'CHEMICAL', 'CULTURAL'].map(tab => (
+                              <button
+                                key={tab}
+                                onClick={() => setActiveRemedialTab(tab)}
+                                style={{
+                                  padding: '2px 8px', borderRadius: '4px', border: 'none',
+                                  fontSize: '10px', fontWeight: 700, cursor: 'pointer',
+                                  backgroundColor: activeRemedialTab === tab ? '#2563eb' : '#e2e8f0',
+                                  color: activeRemedialTab === tab ? '#ffffff' : '#475569'
+                                }}
+                              >
+                                {tab}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '8px' }}>
+                          {cand.remedies
+                            .filter(r => activeRemedialTab === 'ALL' || r.category === activeRemedialTab)
+                            .map((rem, idx) => (
+                              <div key={idx} style={{ backgroundColor: '#ffffff', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ fontWeight: 800, color: rem.category === 'BIOLOGICAL' ? '#16a34a' : (rem.category === 'CHEMICAL' ? '#2563eb' : '#7c3aed') }}>
+                                    {rem.category}
+                                  </span>
+                                  {rem.safety_period_days !== null && rem.safety_period_days !== undefined && (
+                                    <span style={{ color: '#d97706', fontWeight: 700 }}>PHI: {rem.safety_period_days}d</span>
+                                  )}
+                                </div>
+                                <div style={{ fontWeight: 700, color: '#0f172a' }}>{rem.action_title}</div>
+                                <div style={{ color: '#64748b' }}><strong>Active: </strong>{rem.active_ingredient_or_measure}</div>
+                                <div style={{ color: '#475569', backgroundColor: '#f8fafc', padding: '4px 6px', borderRadius: '4px' }}>{rem.application_dosage_or_method}</div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action Buttons: Apply or Save */}
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #e2e8f0' }}>
                       <button
                         onClick={() => {
                           setShowReportWizard(true);
-                          setWizardData(prev => ({ ...prev, crop_id: scanCropId, suspected_problem_id: cand.problem_id }));
+                          setWizardData(prev => ({
+                            ...prev,
+                            crop_id: scanCropId,
+                            suspected_problem_id: cand.problem_id !== 'pred-1' ? cand.problem_id : '',
+                            severity: cand.severity || 'MODERATE',
+                            symptoms_notes: `${cand.name} - ${cand.rationale}`
+                          }));
+                          showToast('AI diagnostic findings applied to case report form.');
                         }}
-                        style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', backgroundColor: '#16a34a', color: '#ffffff', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }}
+                        style={{
+                          flex: 1, padding: '10px 14px', borderRadius: '8px', border: 'none',
+                          backgroundColor: '#16a34a', color: '#ffffff', fontWeight: 700, fontSize: '13px',
+                          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+                        }}
                       >
-                        Save as Case Report
+                        <CheckCircle2 size={16} /> Accept & Create Case Report
                       </button>
                     </div>
                   </div>

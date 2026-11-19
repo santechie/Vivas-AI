@@ -995,6 +995,143 @@ router.post('/cases/:id/resolve', async (req, res) => {
 // 4. AI DIAGNOSIS & REMEDIES GATEWAY
 // ==========================================
 
+// POST /api/ch/cases/diagnose-instant - Instant multimodal visual pathology & remedies
+router.post('/cases/diagnose-instant', async (req, res) => {
+  const { image_base64, image_url, mime_type, crop_id, crop_name, farm_id } = req.body || {};
+
+  if (!image_base64 && !image_url) {
+    return res.status(400).json({ success: false, message: 'Image data is required for visual diagnosis.' });
+  }
+
+  try {
+    const mlUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
+    const startTime = Date.now();
+
+    // 1. Resolve crop name hint if crop_id is provided
+    let finalCropName = crop_name || '';
+    if (crop_id && !finalCropName) {
+      const cropRes = await pool.query('SELECT name FROM vivas_crops WHERE id = $1', [crop_id]);
+      if (cropRes.rows.length > 0) {
+        finalCropName = cropRes.rows[0].name;
+      }
+    }
+
+    // 2. Query ML Microservice on port 8000
+    const mlResponse = await fetch(`${mlUrl}/v1/analyze-instant`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        image_base64,
+        image_url,
+        mime_type: mime_type || 'image/jpeg',
+        hint_crop_name: finalCropName
+      })
+    });
+
+    if (!mlResponse.ok) {
+      const errDetail = await mlResponse.text();
+      return res.status(502).json({ success: false, message: `ML Service Error: ${errDetail}` });
+    }
+
+    const aiResult = await mlResponse.json();
+    const latencyMs = Date.now() - startTime;
+
+    if (!aiResult.is_plant_or_crop) {
+      return res.json({
+        success: false,
+        message: 'No agricultural plant, leaf, fruit, or stem detected in the photo. Please take a clear, close-up photo of the affected crop.'
+      });
+    }
+
+    // 3. Grounding against internal pathology library (ch_problem)
+    let groundedProblem = null;
+    let groundedRemedies = [];
+    let partnerProducts = [];
+
+    const problemSearchTerms = [
+      aiResult.problem_name,
+      aiResult.scientific_name,
+      aiResult.problem_name.split('&')[0].trim(),
+      aiResult.problem_name.split('(')[0].trim()
+    ].filter(Boolean);
+
+    let matchQuery = `
+      SELECT p.id, p.code, p.name, p.scientific_name, p.problem_type, p.potential_severity
+      FROM ch_problem p
+      WHERE p.deleted_at IS NULL AND (
+    `;
+    const matchConditions = [];
+    const matchParams = [];
+    problemSearchTerms.forEach((term, idx) => {
+      matchParams.push(`%${term}%`);
+      matchConditions.push(`p.name ILIKE $${matchParams.length} OR p.scientific_name ILIKE $${matchParams.length}`);
+    });
+    matchQuery += matchConditions.join(' OR ') + `) ORDER BY p.name ASC LIMIT 1`;
+
+    const problemMatchRes = await pool.query(matchQuery, matchParams);
+    if (problemMatchRes.rows.length > 0) {
+      groundedProblem = problemMatchRes.rows[0];
+
+      // Retrieve grounded remedies from ch_control_measure
+      const remediesRes = await pool.query(`
+        SELECT cm.id, cm.method_type, cm.title, cm.description, cm.active_ingredient, 
+               cm.dose_value, cm.dose_unit_id, cm.phi_days, cm.interval_days, cm.safety_notes
+        FROM ch_control_measure cm
+        WHERE cm.problem_id = $1 AND cm.is_active = true
+        ORDER BY CASE cm.method_type::text WHEN 'BIOLOGICAL' THEN 1 WHEN 'CHEMICAL' THEN 2 ELSE 3 END ASC
+      `, [groundedProblem.id]);
+      groundedRemedies = remediesRes.rows;
+
+      // Cross-link with commercial products in Partner Input Hub
+      try {
+        const prodRes = await pool.query(`
+          SELECT p.id, p.brand_name, p.technical_name, p.category, p.mrp_inr,
+                 (SELECT url FROM pih_product_media pm WHERE pm.product_id = p.id AND pm.is_primary = true LIMIT 1) as thumbnail_url
+          FROM pih_products p
+          WHERE p.status = 'ACTIVE' AND (
+            p.technical_name ILIKE $1 OR p.brand_name ILIKE $1 OR
+            EXISTS (SELECT 1 FROM pih_product_claims pc WHERE pc.product_id = p.id AND pc.target_pest_disease ILIKE $2)
+          )
+          LIMIT 4
+        `, [`%${groundedProblem.name.split(' ')[0]}%`, `%${groundedProblem.name}%`]);
+        partnerProducts = prodRes.rows;
+      } catch (e) {
+        // Safe catch if claims table is empty
+      }
+    }
+
+    // 4. Audit Log in ch_ai_request (Trial mode with zero balance reduction)
+    try {
+      await pool.query(`
+        INSERT INTO ch_ai_request (
+          farm_id, request_type, payload, response, status, model_name, model_version, latency_ms
+        ) VALUES ($1, 'VISION_INSTANT', $2, $3, 'SUCCESS', 'vivas-crop-health-vision', '2.0.0-trial', $4)
+      `, [
+        farm_id || null,
+        JSON.stringify({ crop_name: finalCropName, organ: aiResult.plant_part }),
+        JSON.stringify(aiResult),
+        latencyMs
+      ]);
+    } catch (e) {
+      // safe catch for logging
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        ai_diagnosis: aiResult,
+        grounded_problem: groundedProblem,
+        database_remedies: groundedRemedies,
+        partner_products: partnerProducts,
+        is_evaluation_mode: true
+      }
+    });
+  } catch (err) {
+    console.error('Error during instant diagnosis:', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // POST /api/ch/cases/:id/diagnose - Run AI engine diagnosis (SRS 11.2 blended diagnosis)
 router.post('/cases/:id/diagnose', async (req, res) => {
   try {
