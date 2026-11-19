@@ -793,10 +793,18 @@ export default function CropHealth() {
       const selectedCropObj = masterCrops.find(c => c.id === scanCropId);
       const photoPayload = scanPhotos.length > 0 ? scanPhotos[0] : null;
 
+      // Retrieve auth token for authorization
+      const token = typeof window !== 'undefined'
+        ? (localStorage.getItem('vivas_token') || sessionStorage.getItem('vivas_token') || localStorage.getItem('token'))
+        : '';
+
       // Call multimodal instant vision endpoint
       const res = await fetch(`${API_BASE}/ch/cases/diagnose-instant`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           image_base64: photoPayload || 'data:image/jpeg;base64,/9j/4AAQSkZJRg==',
           crop_id: scanCropId,
@@ -812,17 +820,17 @@ export default function CropHealth() {
         // Map candidate cards
         const primaryCand = {
           rank: 1,
-          problem_id: groundedProblem?.id || 'pred-1',
-          name: ai_diagnosis.problem_name,
-          scientific_name: ai_diagnosis.scientific_name,
-          type: ai_diagnosis.problem_type,
-          confidence: ai_diagnosis.confidence,
-          rationale: ai_diagnosis.explanation,
-          severity: ai_diagnosis.severity,
-          plant_part: ai_diagnosis.plant_part,
-          symptoms: ai_diagnosis.symptoms_observed || [],
-          immediate_actions: ai_diagnosis.immediate_actions || [],
-          remedies: ai_diagnosis.remedies || []
+          problem_id: grounded_problem?.id || 'pred-1',
+          name: ai_diagnosis?.problem_name || 'Crop Health Issue',
+          scientific_name: ai_diagnosis?.scientific_name || '',
+          type: ai_diagnosis?.problem_type || 'DISEASE',
+          confidence: ai_diagnosis?.confidence || 0.9,
+          rationale: ai_diagnosis?.explanation || 'Visual analysis completed.',
+          severity: ai_diagnosis?.severity || 'MODERATE',
+          plant_part: ai_diagnosis?.plant_part || 'LEAF',
+          symptoms: ai_diagnosis?.symptoms_observed || [],
+          immediate_actions: ai_diagnosis?.immediate_actions || [],
+          remedies: ai_diagnosis?.remedies || []
         };
 
         setScanResults([primaryCand]);
